@@ -1,6 +1,28 @@
-// QuPath 0.4+ | tiles_v2 (Lesion / Normal / Normal-Far / Normal-Red)
-// 背景安全 + 组织覆盖率 + 边框屏蔽 + 边缘伪影过滤 + 预扫/回退/兜底 + 安全读取
-// 直接在已打开的 WSI 上运行；输出到 Project/tiles_v2/<WSI名>/*
+// QuPath v0.4+ | tiles_v2 exporter (Lesion / Normal / Normal-Far / Normal-Red)
+//
+// Purpose
+// - Export annotation-guided training tiles (224×224) from the currently opened WSI.
+// - Output layout: Project/tiles_v2/<WSI_name>/{Lesion,Normal,Normal-Far,Normal-Red}/
+//
+// Key design choices (robustness & reproducibility)
+// - Background-safe sampling: explicit background & low-optical-density (low-OD) screening.
+// - Tissue coverage constraint: reject tiles with insufficient tissue fraction.
+// - Slide-border exclusion: reject tiles close to the WSI canvas boundary (coverslip edges / scan borders).
+// - Edge-artifact filter: reject tiles with dark edge bands (e.g., black bars / slide edge).
+// - Safe region reading: retry logic to mitigate intermittent IO / server read failures.
+// - Adaptive hard-negative mining: pre-scan candidates and select (i) Far negatives and (ii) “Hard/Red” negatives
+//   using quantile-based thresholds on Lab a* (redness proxy) and grayscale texture std.
+//
+// Usage
+// - Open a WSI in QuPath, ensure lesion annotations are present, then run this script.
+// - The script exports tiles at a target resolution (UM_PER_PX) and tile size (TILE).
+//
+// Notes
+// - “Lesion” tiles are sampled inside annotations (excluding specified class-name prefixes).
+// - “Normal” tiles are sampled outside lesion ROIs within a padded bounding window.
+// - “Normal-Far” tiles are sampled outside lesion ROIs and at least MIN_DIST_UM away from lesions.
+// - “Normal-Red (Hard)” tiles are selected by high redness and/or texture, and also kept away from lesions.
+// - Backoff rounds relax distance/threshold constraints if insufficient Far/Hard tiles are found.
 
 import qupath.lib.objects.PathObject
 import qupath.lib.roi.interfaces.ROI
@@ -11,45 +33,45 @@ import java.text.SimpleDateFormat
 import java.util.Collections
 import static java.lang.Math.*
 
-// ===== 基本参数 =====
-def EXCLUDE_PREFIXES = ['Region', 'Ignore']   // 这些前缀的注释不当 Lesion
+// ===== Core parameters =====
+def EXCLUDE_PREFIXES = ['Region', 'Ignore']   // Annotation class-name prefixes to exclude from Lesion set
 int    TILE = 224
-double UM_PER_PX = 0.5                        // 目标分辨率（~20x）
-double NEG_POS = 1.0                          // Normal : Lesion
-int    PAD = 6000
+double UM_PER_PX = 0.5                        // Target resolution (~20×), in microns per pixel
+double NEG_POS = 1.0                          // Normal : Lesion ratio for baseline negatives
+int    PAD = 6000                             // Padding (in pixels at base resolution) around lesion bounding box
 
 boolean WRITE_BASE_POS = true
 boolean WRITE_BASE_NEG = true
 String  RUN_TAG = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date())
 
-// ===== 难负样本目标与阈值（可调）=====
+// ===== Hard-negative mining (tunable) =====
 boolean ENABLE_FAR  = true
 boolean ENABLE_HARD = true
-double FAR_MULT     = 0.50                    // 目标 = 正样本 * 0.5
-double HARD_MULT    = 0.50
-double MIN_DIST_UM  = 2000                    // Far/Hard 与病灶最小距离（µm）
-double A_Q          = 0.65                    // 偏红/粉 分位阈值
-double T_Q          = 0.50                    // 纹理std 分位阈值
+double FAR_MULT     = 0.50                    // Target Far negatives = positives * FAR_MULT
+double HARD_MULT    = 0.50                    // Target Hard negatives = positives * HARD_MULT
+double MIN_DIST_UM  = 2000                    // Minimum distance to lesion for Far/Hard (microns)
+double A_Q          = 0.65                    // Quantile threshold for Lab a* (redness proxy)
+double T_Q          = 0.50                    // Quantile threshold for texture std (grayscale)
 
-int    MAX_BACKOFF_ROUNDS = 3                 // 回退最多轮次
-double BACKOFF_DIST_FACTOR = 0.7              // 每轮距离 ×0.7
-double BACKOFF_AQ          = 0.05             // 每轮 a* 阈值 ↓0.05
-double BACKOFF_TQ          = 0.05             // 每轮 std 阈值 ↓0.05
-double MIN_DIST_UM_FLOOR   = 1200             // 距离下限
-double A_Q_FLOOR           = 0.50
-double T_Q_FLOOR           = 0.45
+int    MAX_BACKOFF_ROUNDS = 3                 // Max relaxation rounds
+double BACKOFF_DIST_FACTOR = 0.7              // Distance *= 0.7 per round
+double BACKOFF_AQ          = 0.05             // a* threshold decreases by 0.05 per round
+double BACKOFF_TQ          = 0.05             // std threshold decreases by 0.05 per round
+double MIN_DIST_UM_FLOOR   = 1200             // Lower bound for distance relaxation (microns)
+double A_Q_FLOOR           = 0.50             // Lower bound for a* quantile
+double T_Q_FLOOR           = 0.45             // Lower bound for std quantile
 
-// ===== 预扫密度 =====
+// ===== Pre-scan density =====
 int    SAMPLE_STEP   = 4
-double PREPASS_STRIDE_FACTOR = 0.75           // 0.75=较密, 1.0=常规
+double PREPASS_STRIDE_FACTOR = 0.75           // Candidate scan stride as a fraction of tile step (smaller = denser)
 
-// ===== 画幅边框/组织/伪影过滤 =====
+// ===== Border & artifact filtering =====
 boolean SKIP_BORDER = true
-double  BORDER_UM = 1500                      // 画幅边距 <1.5mm 一律丢弃
-double  MIN_TISSUE_FRAC = 0.15                // 组织覆盖率阈值（基于低OD）
+double  BORDER_UM = 1500                      // Exclude tiles within BORDER_UM of WSI canvas boundary (microns)
+double  MIN_TISSUE_FRAC = 0.15                // Minimum tissue fraction (computed from low-OD heuristic)
 
-// ============ 背景与组织覆盖率 ============
-// 返回 [isBg(boolean), tissueFrac(double)]
+// ============ Background & tissue coverage ============
+// Returns [isBackground(boolean), tissueFraction(double)]
 def analyzeBackground = { BufferedImage img ->
   def ras = img.getRaster(); int w = img.getWidth(), h = img.getHeight()
   int step = 2; long n = 0
@@ -78,10 +100,11 @@ def analyzeBackground = { BufferedImage img ->
   return [isBg, tissueFrac]
 }
 
-// ============ 边缘伪影（黑条/玻片边）检测 ============
+// ============ Edge artifact detection (dark bars / slide edges) ============
+// Flags tiles with abnormally dark bands near the top/bottom edges.
 def hasEdgeArtifact = { BufferedImage img ->
   def ras = img.getRaster(); int w = img.getWidth(), h = img.getHeight()
-  int band = Math.max(1, (int)Math.round(h * 0.10)) // 上下各10%
+  int band = Math.max(1, (int)Math.round(h * 0.10)) // Top/bottom 10%
   int[] rgb = new int[3]
   double sumTop = 0, sumBot = 0; long nTop = 0, nBot = 0
   for (int yy=0; yy<band; yy++) {
@@ -92,19 +115,26 @@ def hasEdgeArtifact = { BufferedImage img ->
   }
   double meanTop = (nTop>0)?(sumTop/nTop):255
   double meanBot = (nBot>0)?(sumBot/nBot):255
-  return (meanTop < 140) || (meanBot < 140)    // 阈值可调：140→160 更严格
+  return (meanTop < 140) || (meanBot < 140)    // More strict: increase 140 → 160
 }
 
-// ============ 其他工具 ============
+// ============ Utility helpers ============
+
+// Whether an annotation class name is excluded from the lesion set.
 def isExcluded = { name ->
   if (name == null) return false
   def n = name.replace('*','')
   return EXCLUDE_PREFIXES.any { n.startsWith(it) }
 }
+
+// Check whether a point lies inside any ROI in a given PathObject list.
 def inAny = { double x, double y, List<PathObject> objs ->
   for (po in objs) { ROI r = po.getROI(); if (r!=null && r.contains(x,y)) return true }
   false
 }
+
+// Approximate minimum Euclidean distance (in pixels) from a point to the bounding boxes of lesion ROIs.
+// If the point is inside any lesion ROI, returns 0.
 def minDistToLesionsPx = { double cx, double cy, List<PathObject> objs ->
   double best = Double.POSITIVE_INFINITY
   for (po in objs) {
@@ -117,6 +147,10 @@ def minDistToLesionsPx = { double cx, double cy, List<PathObject> objs ->
   }
   return best
 }
+
+// Compute tile-level features for hard-negative mining:
+// - Lab a* mean as a redness proxy
+// - grayscale standard deviation as a simple texture proxy
 def tileFeatures = { BufferedImage img, int step ->
   def ras = img.getRaster(); int w = img.getWidth(), h = img.getHeight()
   double aSum=0, graySum=0, graySq=0; long n=0
@@ -139,6 +173,8 @@ def tileFeatures = { BufferedImage img, int step ->
   double gStd  = Math.sqrt(Math.max(0.0, (graySq/Math.max(1,n) - gMean*gMean)))
   return [aMean, gStd]
 }
+
+// Linear-interpolated quantile.
 def quantile = { List<Double> xs, double q ->
   if (xs==null || xs.isEmpty()) return 0.0
   def ys = new ArrayList<Double>(xs); java.util.Collections.sort(ys)
@@ -148,6 +184,8 @@ def quantile = { List<Double> xs, double q ->
   double w = pos - lo
   return ys[lo]*(1.0-w) + ys[hi]*w
 }
+
+// Safe region reader: retries to reduce failures from IO / server backend.
 def safeReadRegion = { serverObj, double downsample, int x, int y, int w, int h ->
   int tries = 0
   while (tries < 3) {
@@ -163,7 +201,7 @@ def safeReadRegion = { serverObj, double downsample, int x, int y, int w, int h 
   return null
 }
 
-// ===== 环境与路径 =====
+// ===== Environment & output paths =====
 def imageData = getCurrentImageData()
 def server = imageData.getServer()
 double base = server.getPixelCalibration()?.getAveragedPixelSizeMicrons(); if (Double.isNaN(base)) base = 0.25
@@ -188,11 +226,11 @@ println String.format("Base=%.4f um/px  Target=%.4f  down=%.6f  tileBase=%d  bor
 println "Output: " + outRoot
 println "RUN_TAG: " + RUN_TAG
 
-// ===== ROI =====
+// ===== Collect lesion ROIs =====
 def lesions = getAnnotationObjects().findAll { po -> !isExcluded(po.getPathClass()?.getName()) }
 if (lesions.isEmpty()) { println "[SKIP] No annotations (after excluding ${EXCLUDE_PREFIXES})."; return }
 
-// 画幅边框禁区（按中心点）
+// WSI canvas-border exclusion (applied by tile center)
 def inBorder = { double cx, double cy ->
   if (!SKIP_BORDER) return false
   return (cx < BORDER_PX || cy < BORDER_PX ||
@@ -200,7 +238,7 @@ def inBorder = { double cx, double cy ->
           cy > server.getHeight() - BORDER_PX)
 }
 
-// ===== 1) Lesion（ROI 内 + 非背景）=====
+// ===== 1) Export Lesion tiles (inside ROI + non-background) =====
 int ps=0, pb=0, pe=0
 for (obj in lesions) {
   def roi = obj.getROI(); if (roi==null) continue
@@ -221,7 +259,7 @@ for (obj in lesions) {
 println String.format("[Lesion] saved=%d, background=%d, edge=%d", ps,pb,pe)
 if (ps==0) { println "[WARN] zero positives; stop."; return }
 
-// ===== 2) Normal（ROI 外 + 非背景 + 覆盖率 + 非边框 + 无伪影）=====
+// ===== 2) Export Normal tiles (outside ROI + non-background + tissue + non-border + no edge artifact) =====
 int ns=0, nb=0, nl=0, ne=0, na=0
 int minX=Integer.MAX_VALUE,minY=Integer.MAX_VALUE,maxX=Integer.MIN_VALUE,maxY=Integer.MIN_VALUE
 for (obj in lesions) {
@@ -249,7 +287,7 @@ for (int y=minY; y<=maxY-tileBase && ns<targetN; y+=tileBase)
   }
 println String.format("[Normal] saved=%d/target=%d, background/tissue=%d, in_lesion=%d, artifact=%d, edge=%d", ns,targetN,nb,nl,na,ne)
 
-// ===== 3) 预扫候选（ROI 外 + 同样过滤）=====
+// ===== 3) Candidate pre-scan (outside ROI + same filtering) =====
 class TileCand { int x; int y; double a; double s; double distPx }
 def cands = new ArrayList<TileCand>()
 int GRID_STEP = Math.max(1, (int)Math.round(tileBase * PREPASS_STRIDE_FACTOR))
@@ -279,14 +317,14 @@ double A_th_base = quantile(A_vals, A_Q)
 double S_th_base = quantile(S_vals, T_Q)
 println String.format("Adaptive thresholds (base): a* P%.0f = %.3f, std P%.0f = %.3f", A_Q*100, A_th_base, T_Q*100, S_th_base)
 
-// ===== 4) Far/Hard 选择（回退 + 兜底）=====
+// ===== 4) Select Far/Hard negatives (with backoff + fallback) =====
 int target_far  = ENABLE_FAR  ? (int)Math.round(ps*FAR_MULT)  : 0
 int target_hard = ENABLE_HARD ? (int)Math.round(ps*HARD_MULT) : 0
 int MIN_DIST_PX = MIN_DIST_PX_INIT
 double A_th = A_th_base
 double S_th = S_th_base
 
-// 采样写盘（注意参数名用 tgt，避免 Groovy 冲突）
+// Sampling writer (use 'tgt' to avoid Groovy name conflicts)
 def pickAndWrite = { List<TileCand> pool, File outDir, String prefix, int tgt ->
   if (tgt<=0) return 0
   Collections.shuffle(pool, new java.util.Random(42L))
@@ -324,14 +362,14 @@ for (int round=1; round<=MAX_BACKOFF_ROUNDS; round++) {
 
   if (gotFar>=target_far && gotHard>=target_hard) break
 
-  // ——修复版回退：显式 Math.max/Math.round，避免 Integer.call 报错——
+  // Backoff (relax constraints) — explicit Math.max/Math.round to avoid Groovy Integer.call pitfalls
   MIN_DIST_PX = (int)Math.max((double)MIN_DIST_PX_FLOOR,
                               Math.round((double)MIN_DIST_PX * BACKOFF_DIST_FACTOR))
   A_th = Math.max(quantile(A_vals, A_Q_FLOOR), A_th - BACKOFF_AQ)
   S_th = Math.max(quantile(S_vals, T_Q_FLOOR), S_th - BACKOFF_TQ)
 }
 
-// 兜底
+// Fallback sampling if still insufficient
 if (gotFar < target_far && ENABLE_FAR) {
   int needFar = target_far - gotFar
   def farPoolLoose = cands.findAll{ it.distPx >= MIN_DIST_PX_FLOOR }
