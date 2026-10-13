@@ -1,0 +1,82 @@
+[
+  {
+    "run": "a5_seed42_fold1",
+    "best_epoch": 3,
+    "best_val_auc_lesion": 0.9005575124028194,
+    "completed_epoch": 9,
+    "no_improve": 6,
+    "config_sha256": "3c62e99f616102c42c87e7393d96d33e772409b52bc8a9f20163604b8a797592"
+  },
+  {
+    "run": "a5_seed42_fold2",
+    "best_epoch": 1,
+    "best_val_auc_lesion": 0.8586123702581772,
+    "completed_epoch": 7,
+    "no_improve": 6,
+    "config_sha256": "8089d58947571bdf525765f480f12e8e5cbcd37a59dcd77655da1f7b7874e73a"
+  },
+  {
+    "run": "a5_seed42_fold3",
+    "best_epoch": 1,
+    "best_val_auc_lesion": 0.8486504793303888,
+    "completed_epoch": 7,
+    "no_improve": 6,
+    "config_sha256": "1c372f5ea6ae75b8c32c30398c8dc470a5d7e934cca15eb82b2075a6cddcf516"
+  },
+  {
+    "run": "a5_seed43_fold1",
+    "best_epoch": 1,
+    "best_val_auc_lesion": 0.9078452559215899,
+    "completed_epoch": 7,
+    "no_improve": 6,
+    "config_sha256": "fc2d678995a4ec4150e7a4ac2e011284355fd20e96f97083e12cfa9e1a656de6"
+  },
+  {
+    "run": "a5_seed43_fold2",
+    "best_epoch": 1,
+    "best_val_auc_lesion": 0.844574654066471,
+    "completed_epoch": 7,
+    "no_improve": 6,
+    "config_sha256": "19bc0b117a125f29f4f7f8246c5aa0ef326544366a96edb09005433eaed79826"
+  },
+  {
+    "run": "a5_seed43_fold3",
+    "best_epoch": 1,
+    "best_val_auc_lesion": 0.8555403496888557,
+    "completed_epoch": 7,
+    "no_improve": 6,
+    "config_sha256": "434434d57e968066b346b7f978bee3dd340a0f7be46ef5b76b9133b0ac1a6db5"
+  },
+  {
+    "run": "a5_seed44_fold1",
+    "best_epoch": 1,
+    "best_val_auc_lesion": 0.9096584592522008,
+    "completed_epoch": 7,
+    "no_improve": 6,
+    "config_sha256": "b9628350cdb5216419b04c10acdb6390b6c3a28496e7ff51f167521f9a083fe7"
+  },
+  {
+    "run": "a5_seed44_fold2",
+    "best_epoch": 1,
+    "best_val_auc_lesion": 0.8485340655419689,
+    "completed_epoch": 7,
+    "no_improve": 6,
+    "config_sha256": "5f5af8bb5888672c4a8c6ebef4c3b36b642088529216d8aef2aadc05d292ed33"
+  },
+  {
+    "run": "a5_seed44_fold3",
+    "best_epoch": 1,
+    "best_val_auc_lesion": 0.8647767617494119,
+    "completed_epoch": 7,
+    "no_improve": 6,
+    "config_sha256": "ed83a06c6a79a3e9fc7acde92b91539f3fe8f3360b537e21ec9f8520b1318595"
+  },
+  {
+    "run": "a6_seed42",
+    "best_epoch": 1,
+    "best_val_auc_lesion": 0.8656217791200815,
+    "completed_epoch": 7,
+    "no_improve": 6,
+    "config_sha256": "b228169669ad26284eb97b9b0dd7f4156c40adfa69dc709e74d08ee15092bffe"
+  }
+]

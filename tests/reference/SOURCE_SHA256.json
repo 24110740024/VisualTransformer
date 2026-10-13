@@ -1,0 +1,81 @@
+[
+  {
+    "file": "sampling.py",
+    "original_source_sha256": "63f3952d1fba0f2d8f79ed85a8318fa058da1a9d9e40b2d2871d7deb6b52957f",
+    "fixture_sha256": "0e9eb8d61b729d47e313d946a2c62ad45a38cd7ba1699d88b4a83b3e6c452536",
+    "functions": [
+      "probabilities",
+      "summary"
+    ],
+    "source_run": "v6, 2026-09-26",
+    "extraction": "Selected definitions; train main begins at RNG seeding. Validation-threshold docstring standardized; executable AST unchanged."
+  },
+  {
+    "file": "scale_transforms.py",
+    "original_source_sha256": "0f004b8b061eaa13875c2324ef423c963687f5e9a41d9206526531dca95f0a9d",
+    "fixture_sha256": "5eba7de055e978d0bacfcef7c84fa083af5a1d7b7bb43bc795724e2dad0fca34",
+    "functions": [
+      "Require224",
+      "build_transforms"
+    ],
+    "source_run": "v6, 2026-09-26",
+    "extraction": "Selected definitions; train main begins at RNG seeding. Validation-threshold docstring standardized; executable AST unchanged."
+  },
+  {
+    "file": "candidate_model.py",
+    "original_source_sha256": "cef736ffd9c3af1780138b6a91215b140694862aff4f84bc43dcf0b790e9cb24",
+    "fixture_sha256": "ef21d2348b108ca7f57896bece582e388f799932590681c74c0253a38ca621da",
+    "functions": [
+      "create_model",
+      "build_optimizer"
+    ],
+    "source_run": "v6, 2026-09-26",
+    "extraction": "Selected definitions; train main begins at RNG seeding. Validation-threshold docstring standardized; executable AST unchanged."
+  },
+  {
+    "file": "evaluate_candidate.py",
+    "original_source_sha256": "7356e97d36e563ce2a3e526444af733e887c0fc5064e6755a36ad5013963adaa",
+    "fixture_sha256": "0f42ad0ec170d6b239095303e5179e932257f2fd37609eea176df83abae21369",
+    "functions": [
+      "select_validation_threshold",
+      "metrics",
+      "bootstrap_auc"
+    ],
+    "source_run": "v6, 2026-09-26",
+    "extraction": "Selected definitions; train main begins at RNG seeding. Validation-threshold docstring standardized; executable AST unchanged."
+  },
+  {
+    "file": "predict_candidate.py",
+    "original_source_sha256": "2329e835a24097bbee9fda7898c89a16e5672989371a2aea148ec6483941d1f1",
+    "fixture_sha256": "0f5f3b0ac855f8fd9b902a1238a0efe04bf9003387938f05b039dd7760beffdd",
+    "functions": [
+      "TiledJpegReader",
+      "preprocess_crop",
+      "DenseCropDataset",
+      "flips4_probabilities"
+    ],
+    "source_run": "v6, 2026-09-26",
+    "extraction": "Selected definitions; train main begins at RNG seeding. Validation-threshold docstring standardized; executable AST unchanged."
+  },
+  {
+    "file": "analyze_candidate.py",
+    "original_source_sha256": "3ae3e5dd4ff110cb8a93ef99e21809bb303a8102e4cef38a086d18dea3406b5e",
+    "fixture_sha256": "fdd51cbc1c0bf78ced348ad9aa27c5ce0ce3206a07620bcbb895b51534b931da",
+    "functions": [
+      "paired_bootstrap_ci",
+      "association_results"
+    ],
+    "source_run": "v6, 2026-09-26",
+    "extraction": "Selected definitions; train main begins at RNG seeding. Validation-threshold docstring standardized; executable AST unchanged."
+  },
+  {
+    "file": "train_candidate.py",
+    "original_source_sha256": "777819fa57921245654c994c6b4ade02de00db755c34cf69e966d2bf69044543",
+    "fixture_sha256": "b9144ac0cd32a77033b1ad60ae96562884b3dcd8f5da234def84be38ac667e18",
+    "functions": [
+      "main"
+    ],
+    "source_run": "v6, 2026-09-26",
+    "extraction": "Selected definitions; train main begins at RNG seeding. Validation-threshold docstring standardized; executable AST unchanged."
+  }
+]

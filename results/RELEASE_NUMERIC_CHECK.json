@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "a6_validation_rows": 7909,
+  "a6_test_rows": 8704,
+  "a5_predictions_checked": 396096,
+  "animal_seed_means": 63,
+  "animals": 21,
+  "associations_checked": 40,
+  "influence_checks": 112,
+  "full_bootstrap": true,
+  "model_retrained": false
+}

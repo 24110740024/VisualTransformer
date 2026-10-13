@@ -1,0 +1,6 @@
+-r requirements-analysis.txt
+torch>=2.4,<3
+torchvision>=0.19,<1
+opencv-python-headless>=4.10,<5
+tifffile>=2024.8
+shapely>=2,<3

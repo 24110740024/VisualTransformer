@@ -1,0 +1,32 @@
+{
+  "format": "byte-concatenated ZIP, numeric part order",
+  "bytes": 17868225,
+  "sha256": "2c9fab7111d1dec1184d363bd32821058dec87ca471329a71b6419e735f48b94",
+  "parts": [
+    {
+      "path": "manifests.zip.part001",
+      "bytes": 4194304,
+      "sha256": "56f1121708ca2c7108e15c61d72c35794ca4d7a0d33af14c19467ee3a35321f9"
+    },
+    {
+      "path": "manifests.zip.part002",
+      "bytes": 4194304,
+      "sha256": "6d994333994bd6755a27c55e63be0b97404e1ba7000da6ef3bfff19e2bb7ab4a"
+    },
+    {
+      "path": "manifests.zip.part003",
+      "bytes": 4194304,
+      "sha256": "4cb84a66df4e694696294b34b6ab16d8ec752caac71717939d29e40b74fc4899"
+    },
+    {
+      "path": "manifests.zip.part004",
+      "bytes": 4194304,
+      "sha256": "bef04c3d3a94184c6e5b4f7601852d2da42cd53fdbf1ff01b9ea845101206878"
+    },
+    {
+      "path": "manifests.zip.part005",
+      "bytes": 1091009,
+      "sha256": "e354dc7afa6e04b928ee4776a5017eab10d9ba77cfd1dae03f9fb63e17e05df8"
+    }
+  ]
+}
