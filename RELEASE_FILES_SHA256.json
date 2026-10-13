@@ -248,18 +248,13 @@
     },
     {
       "path": "docs/CHANGELOG_20261013.md",
-      "bytes": 2466,
-      "sha256": "9b6bae76ebb7e4514d7de7ae2fdde217523e432fa8b4cac5521726ad117a52d4"
+      "bytes": 2576,
+      "sha256": "3b7218e0df1a86b56f8f9cf555706dab6f491013fa1a99f9ae562cbddf8f7c5c"
     },
     {
       "path": "docs/EXPORT_PROVENANCE.json",
       "bytes": 11546,
       "sha256": "3a7ac838bb23d707b84636e06e246f1d98cb9d3fbff0923f856742a545812352"
-    },
-    {
-      "path": "docs/legacy_readme_before_20261013.md",
-      "bytes": 5592,
-      "sha256": "f7afc3647d1972413e0bedf686621ef38e78a0fcc719acb7e6cdd25323e31e33"
     },
     {
       "path": "docs/METHODS_AND_LIMITATIONS.md",
@@ -273,8 +268,8 @@
     },
     {
       "path": "docs/README_zh.md",
-      "bytes": 1765,
-      "sha256": "f9fea4a47297ff5f6dfd30fc66c73408d2c3ad0b480a8d2cec5a3d109884350d"
+      "bytes": 1891,
+      "sha256": "91a503742c7462e560d16f9d064ceb04aba1679ee480d1f7d6b48c9645b88a5d"
     },
     {
       "path": "docs/RELEASE_SOFTWARE_CHECK.json",
@@ -303,8 +298,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 6816,
-      "sha256": "bef7d17ebc00927799d8a45804fdb40dafd7688da79160c8f2117d89d5438401"
+      "bytes": 6632,
+      "sha256": "14ac1aecf5444a9355bbe2d8a56d2117ecbbd803714726da283d48b6640a2cce"
     },
     {
       "path": "rebuild_v6/aggregate.py",
@@ -693,178 +688,8 @@
     },
     {
       "path": "THIRD_PARTY_NOTICES.md",
-      "bytes": 2572,
-      "sha256": "68c4872e2e2945fee3b5b675d06512d95e158db3586ded8c834d721395d96ae1"
-    },
-    {
-      "path": "VisualTransformer/.gitignore",
-      "bytes": 188,
-      "sha256": "a40fc882c109b30e4745bae728c56aa15d1f16fe47802db163a319f9757930d6"
-    },
-    {
-      "path": "VisualTransformer/pathology_seg/1-create_patches_fp.py",
-      "bytes": 13818,
-      "sha256": "dc052c21a9e3005033da070ca3f48e2603ff5935469523ad317d46e5a1ad4a46"
-    },
-    {
-      "path": "VisualTransformer/pathology_seg/2-get_png.py",
-      "bytes": 2150,
-      "sha256": "c0fdc8455b476a88ff0b0faf6d0c3ffc7aa66ef518f704dfc1e5197b00efe4de"
-    },
-    {
-      "path": "VisualTransformer/pathology_seg/3-level_check.py",
-      "bytes": 279,
-      "sha256": "0f2d819397b7918eebccb69c93a82542c807c34deb8ffd497ab58057aafde566"
-    },
-    {
-      "path": "VisualTransformer/pathology_seg/datasets/dataset_generic.py",
-      "bytes": 12317,
-      "sha256": "705a733953d2c6b2ae29e4a49a9abe529e10d8118c213e99b73ae7b56d492b3e"
-    },
-    {
-      "path": "VisualTransformer/pathology_seg/datasets/dataset_h5.py",
-      "bytes": 4426,
-      "sha256": "4d2d9d5072c5ebb181509f107c1a7418694609c2e7810af7851f80b94eb531ff"
-    },
-    {
-      "path": "VisualTransformer/pathology_seg/datasets/wsi_dataset.py",
-      "bytes": 5442,
-      "sha256": "5b6394e0ad7bf725c2f99c653cf42d08f369ce445357013c935bf7e2a47f5bf5"
-    },
-    {
-      "path": "VisualTransformer/pathology_seg/models/model_clam.py",
-      "bytes": 10988,
-      "sha256": "0f84e984b58e36ee9ba515a1848cbfd8b718bba29a3185bc596e3e58610274c7"
-    },
-    {
-      "path": "VisualTransformer/pathology_seg/models/model_mil.py",
-      "bytes": 3544,
-      "sha256": "ea9006c9acf6ccfbe1c7e2a4e24192dbfe8e61b17f9d773da2727785a7de2489"
-    },
-    {
-      "path": "VisualTransformer/pathology_seg/models/resnet_custom.py",
-      "bytes": 4281,
-      "sha256": "f29f83c47dad546633a4ec2dff5b86009969e5784bb4ed4762cc9f323943615a"
-    },
-    {
-      "path": "VisualTransformer/pathology_seg/utils/core_utils.py",
-      "bytes": 19360,
-      "sha256": "2191603bddd49e92ae8322fc5c2e78fa43d76a907a51e07b65105d9f9c3fb8b8"
-    },
-    {
-      "path": "VisualTransformer/pathology_seg/utils/eval_utils.py",
-      "bytes": 4035,
-      "sha256": "24a176730b89078904c1054aca5b65fc8aae4e06c985b0b4dddeca85684ae5fe"
-    },
-    {
-      "path": "VisualTransformer/pathology_seg/utils/file_utils.py",
-      "bytes": 1129,
-      "sha256": "c37d1f2a2ee3b35727aa6b54363401e8860c1a3885115c9c3a02b7bf989d0ee9"
-    },
-    {
-      "path": "VisualTransformer/pathology_seg/utils/utils.py",
-      "bytes": 5633,
-      "sha256": "c41aadf16098cd2b755a3f4203383c6f7cb398d4bcf6a13635877444baea08cc"
-    },
-    {
-      "path": "VisualTransformer/pathology_seg/vis_utils/heatmap_utils.py",
-      "bytes": 3302,
-      "sha256": "f955c418325a0365b3b0e2e0028db4d5ebc4baf9847961eeeacfe10be82cbafb"
-    },
-    {
-      "path": "VisualTransformer/pathology_seg/wsi_core/batch_process_utils.py",
-      "bytes": 3212,
-      "sha256": "84a2328eeaf8bbab214bcc9be7bab98c7e879905c4be1d83a1a7319f1f9faf32"
-    },
-    {
-      "path": "VisualTransformer/pathology_seg/wsi_core/util_classes.py",
-      "bytes": 3945,
-      "sha256": "ef9bd3d685314cf5aba55c7e3d41ec911efb8567e769797d7534b05c1748e0db"
-    },
-    {
-      "path": "VisualTransformer/pathology_seg/wsi_core/WholeSlideImage.py",
-      "bytes": 34062,
-      "sha256": "de29d4f59b5c3470d71d83e2b69d435db57e30ea4bf23c8f3324b39ab5524e65"
-    },
-    {
-      "path": "VisualTransformer/pathology_seg/wsi_core/wsi_utils.py",
-      "bytes": 13271,
-      "sha256": "ab5d5bb0264945277521e4edecd6d71e674e3f7802f451bf1381f1b6d52800f9"
-    },
-    {
-      "path": "VisualTransformer/qupath/qupath_tiler_v2.groovy",
-      "bytes": 19814,
-      "sha256": "5598e7e5690c856db0348c7743915a1e3f49f07ffe9f0b4b89b0bd40edb92e82"
-    },
-    {
-      "path": "VisualTransformer/qupath/README.md",
-      "bytes": 111,
-      "sha256": "b0ed22d6b6f6b6506cdf0dea17e3613340827d4d35b77ba8716a6834af60a2ab"
-    },
-    {
-      "path": "VisualTransformer/README.md",
-      "bytes": 458,
-      "sha256": "b71414a9811f427dfe4997d5ca6a98b5816ddfc7fcde4e921c7f62e5d9e4ac90"
-    },
-    {
-      "path": "VisualTransformer/vit_wsi/core/dataset.py",
-      "bytes": 1028,
-      "sha256": "61be3c8fe084a53de665b09ef3a73c821ed7e0a812327e2312bf78fb25f6d597"
-    },
-    {
-      "path": "VisualTransformer/vit_wsi/core/model.py",
-      "bytes": 2915,
-      "sha256": "2cd0924e55196bd3d1be124345b7dd609f0cd1efaceed1ddf179bafeb7ea2901"
-    },
-    {
-      "path": "VisualTransformer/vit_wsi/core/utils.py",
-      "bytes": 2869,
-      "sha256": "8ded5fd473d431f68bcb8ac7b70e4680cf66144d33a66d38b370baff72197365"
-    },
-    {
-      "path": "VisualTransformer/vit_wsi/evaluation/calib_gridsearch_v4.py",
-      "bytes": 12670,
-      "sha256": "e71a6015b992315734af0435683e86d9c65876d8e32a77a5d3ccda9823e128a2"
-    },
-    {
-      "path": "VisualTransformer/vit_wsi/evaluation/plot_roc_val.py",
-      "bytes": 6614,
-      "sha256": "8657a11161b48a1b985a853a31c71655c8b04d908fc84e589147b409dc6f1985"
-    },
-    {
-      "path": "VisualTransformer/vit_wsi/evaluation/validate_and_plots.py",
-      "bytes": 21433,
-      "sha256": "9a856d0c24154df1926642638ffc2814587367f137023339bd032e0e86cfa756"
-    },
-    {
-      "path": "VisualTransformer/vit_wsi/pipeline/filter_case_prob.py",
-      "bytes": 1655,
-      "sha256": "bc3ecbff273a7b22cca6b5f6beebafb48e7163038d8158d18542da07e7e73ab3"
-    },
-    {
-      "path": "VisualTransformer/vit_wsi/pipeline/make_case_prob_from_patches.py",
-      "bytes": 2966,
-      "sha256": "8da1545ff23c522418ac3db0847ebc74735d716850f90deeb7f0ce2b4ad80e88"
-    },
-    {
-      "path": "VisualTransformer/vit_wsi/pipeline/predict_dual_tta_safe.py",
-      "bytes": 14600,
-      "sha256": "02b2b9038210292b7c0a9a6e6aff16b0866d1b6b7f9fecfa449a9f200a3d2469"
-    },
-    {
-      "path": "VisualTransformer/vit_wsi/pipeline/split_from_qupath.py",
-      "bytes": 3842,
-      "sha256": "62f4763ed2e061abfdd9944402f7d9b051f5baf4fae4e01b279af1c586e080e8"
-    },
-    {
-      "path": "VisualTransformer/vit_wsi/pipeline/train_finetune.py",
-      "bytes": 10512,
-      "sha256": "215deb4ab57e0241821bdea914964f60394e4b5ca43184b2f2cbe3d36281deaf"
-    },
-    {
-      "path": "VisualTransformer/vit_wsi/visualization/uni_overlay.py",
-      "bytes": 11609,
-      "sha256": "dd44a66f573fd44b79d2cad82dfb3a2f134baacf112a6febd13cf1d119faa245"
+      "bytes": 2663,
+      "sha256": "0c4042a98173c98544231bd0ce2903bdb9f8c8faf6492993258f8c3b44e9fef8"
     }
   ]
 }

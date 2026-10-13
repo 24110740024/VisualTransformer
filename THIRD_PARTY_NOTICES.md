@@ -18,4 +18,4 @@ Study PNG/WSI assets remain with the authors and are not included. Displayed H&E
 
 ## Historical code
 
-Earlier modules under `VisualTransformer/` retain their upstream headers and attribution. This release does not reassign their authorship or extend permissions for third-party dependencies.
+The initial `VisualTransformer/` implementation is removed from the current tree and remains traceable through earlier Git commits with its original attribution. The audited September 26 source archive is retained. Removal of obsolete files does not reassign authorship or change upstream permissions.

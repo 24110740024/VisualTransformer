@@ -2,7 +2,7 @@
 
 Base repository revision: `0a66e758ba51175fb51becba4f9d14d1ca71c5a7`.
 
-The old root README is preserved in [legacy_readme_before_20261013.md](legacy_readme_before_20261013.md). Existing code under `VisualTransformer/` is retained; a new current-entrypoint notice distinguishes it from the rebuilt workflow.
+The initial `VisualTransformer/` implementation and its old tutorials are removed from the current repository tree because they describe a superseded workflow with known problems. Earlier commits remain available in Git history; no history is rewritten. The byte-verified September 26 source under `archive/20260926/` belongs to the completed rebuild and is retained.
 
 | Earlier description | Current audited rebuild |
 |---|---|

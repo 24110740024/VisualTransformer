@@ -62,7 +62,6 @@ The v6 within-group-centered correlations are only **0.054569 / 0.173181** (Area
 | `results/` | All-variant summary/animal tables, v6 validation/test and all nine A5 prediction tables, training histories, plots and check receipts |
 | `tests/` | CPU contract, identity-leakage and numerical-equivalence tests |
 | `archive/20260926/` | Actual original v6/reference source bytes; requires the original sealed dependency environment to execute |
-| `VisualTransformer/` | Earlier workflow retained for history; **not the current v6 entrypoint** |
 
 ```bash
 python -m pip install -r requirements-analysis.txt
