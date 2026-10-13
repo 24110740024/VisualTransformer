@@ -1,0 +1,3 @@
+﻿outcome,statistic,n_animals,n_groups,animals_per_group,coefficient,inference,status
+Area,Pearson_of_group_centered_values,21,7,3,0.054568935544250075,descriptive_only_no_p_or_CI,ok
+IL6,Pearson_of_group_centered_values,21,7,3,0.17318078352099614,descriptive_only_no_p_or_CI,ok

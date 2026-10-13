@@ -1,0 +1,29 @@
+{
+  "status": "pass",
+  "original_source_files_verified": 38,
+  "original_pixel_samples": [
+    {
+      "label": 0,
+      "pixel_sha256": "1561b6ed175064a7b183657a2e6870c1bbf09f2fb50b23d886729fb9805a82a4",
+      "status": "pass"
+    },
+    {
+      "label": 1,
+      "pixel_sha256": "8ca117681da902b7243ffe13f6235d0a4b64bf8e7ee1990f6d7c50e5c1a66d63",
+      "status": "pass"
+    }
+  ],
+  "cli_help_passed": [
+    "rebuild_v6/train.py",
+    "rebuild_v6/evaluate.py",
+    "rebuild_v6/predict_dense.py",
+    "rebuild_v6/aggregate.py",
+    "rebuild_v6/analyze.py",
+    "scripts/prepare_data.py",
+    "scripts/verify_results.py"
+  ],
+  "python_source_parse": "pass",
+  "public_text_scan": "pass",
+  "local_document_links": "pass",
+  "gpu_training_performed": false
+}

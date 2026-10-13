@@ -1,0 +1,74 @@
+[
+  {
+    "path": "results/predictions/a5_seed42_fold1.csv.gz",
+    "rows": 43968,
+    "source_sha256": "65b64cbaeb22083f4a69b9a44024cec024caf3ceee327a7b876c86e6666045ae",
+    "sha256": "d29f659f194dc0385243b28a8c6bd853b2f4ee66538556825676c9391503d536",
+    "source_relative": "reproduction/new_run/balance_candidate_v6/predictions/a5_seed42_fold1/attempt_20260926T104400_657841Z/tile_predictions.csv",
+    "transformation": "column subset; probability strings unchanged; gzip"
+  },
+  {
+    "path": "results/predictions/a5_seed42_fold2.csv.gz",
+    "rows": 43107,
+    "source_sha256": "be63570b5263aa0af82d84b4d9297c2ce89be9990100d821b4008bcb7d11a115",
+    "sha256": "82c84956670888f2d74bcc47e60ec7ed1db44fcc3f83c7e0699c3de0aef7295b",
+    "source_relative": "reproduction/new_run/balance_candidate_v6/predictions/a5_seed42_fold2/attempt_20260926T104813_869975Z/tile_predictions.csv",
+    "transformation": "column subset; probability strings unchanged; gzip"
+  },
+  {
+    "path": "results/predictions/a5_seed42_fold3.csv.gz",
+    "rows": 44957,
+    "source_sha256": "0c9ef110f6dca112856acce03cdc0ccc1ba19969ddbd57422a05346aebecec0b",
+    "sha256": "54afc6afa79d51ae7efcec67d0728b13e825bda1f593cacbdb8c315c83ca466d",
+    "source_relative": "reproduction/new_run/balance_candidate_v6/predictions/a5_seed42_fold3/attempt_20260926T105217_064955Z/tile_predictions.csv",
+    "transformation": "column subset; probability strings unchanged; gzip"
+  },
+  {
+    "path": "results/predictions/a5_seed43_fold1.csv.gz",
+    "rows": 43968,
+    "source_sha256": "3104f249b4a796bdaa99d09e716b8b46bae619b2bcb7933ccd4fdaeead6251ae",
+    "sha256": "ea8298412237d4ba8ea80942ecb033e91359d976ce05ceea0c08aeb2123311fb",
+    "source_relative": "reproduction/new_run/balance_candidate_v6/predictions/a5_seed43_fold1/attempt_20260926T105638_365806Z/tile_predictions.csv",
+    "transformation": "column subset; probability strings unchanged; gzip"
+  },
+  {
+    "path": "results/predictions/a5_seed43_fold2.csv.gz",
+    "rows": 43107,
+    "source_sha256": "454f772d26ed6ef2e8e6f9c22b6ac6dfabc8b496cc4258774f3f7de2096ddee5",
+    "sha256": "286319850363996eb9c3136ff3a7d9b83673a572a00ffdf48494f97ee4f62a5b",
+    "source_relative": "reproduction/new_run/balance_candidate_v6/predictions/a5_seed43_fold2/attempt_20260926T110045_848532Z/tile_predictions.csv",
+    "transformation": "column subset; probability strings unchanged; gzip"
+  },
+  {
+    "path": "results/predictions/a5_seed43_fold3.csv.gz",
+    "rows": 44957,
+    "source_sha256": "07b9e841400bb80a9527a3b89949f3e97d52e5a91baec4aecbc7fea80be3451e",
+    "sha256": "dff26d2eb07c3e0b92005910315f17f806a21904e890e9486d3e2e493db9d74b",
+    "source_relative": "reproduction/new_run/balance_candidate_v6/predictions/a5_seed43_fold3/attempt_20260926T110452_620264Z/tile_predictions.csv",
+    "transformation": "column subset; probability strings unchanged; gzip"
+  },
+  {
+    "path": "results/predictions/a5_seed44_fold1.csv.gz",
+    "rows": 43968,
+    "source_sha256": "a1a973e279426746fd172eb849f065f36581011cb256ff16d3b4cf0262d25560",
+    "sha256": "b46b318f07306320d1d0a97cd88c281cb396bb161c1f4b428bdf60089455eeb8",
+    "source_relative": "reproduction/new_run/balance_candidate_v6/predictions/a5_seed44_fold1/attempt_20260926T110904_510528Z/tile_predictions.csv",
+    "transformation": "column subset; probability strings unchanged; gzip"
+  },
+  {
+    "path": "results/predictions/a5_seed44_fold2.csv.gz",
+    "rows": 43107,
+    "source_sha256": "6b045ca07c965addc009c89c2060311bab78bfabf9286fae3327f009ad35fdc2",
+    "sha256": "d050b52612c01fe55267e856afe668f9361023aaff23474e4eba96c523dbe5dc",
+    "source_relative": "reproduction/new_run/balance_candidate_v6/predictions/a5_seed44_fold2/attempt_20260926T111317_454396Z/tile_predictions.csv",
+    "transformation": "column subset; probability strings unchanged; gzip"
+  },
+  {
+    "path": "results/predictions/a5_seed44_fold3.csv.gz",
+    "rows": 44957,
+    "source_sha256": "36fb2c2fce4848c2deefa82b25307594db7a63ee47590f97244ad7a16fbacb8a",
+    "sha256": "16dff8ccc50d9a7426db97573e817638073c79f0f64e78ac30ddc6a3b347cdd8",
+    "source_relative": "reproduction/new_run/balance_candidate_v6/predictions/a5_seed44_fold3/attempt_20260926T111722_836621Z/tile_predictions.csv",
+    "transformation": "column subset; probability strings unchanged; gzip"
+  }
+]

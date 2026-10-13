@@ -1,122 +1,84 @@
-# Pathological Image Preprocessing and Patch Generation Pipeline
+# ViT mouse-lung H&E pathology: audited September 2026 rebuild
 
-This study uses mouse lung tissue H&E-stained whole-slide images (WSIs) as input. The overall workflow produces two types of patches for distinct purposes:
+Code, predictions and results for the computational pathology component of a mouse heat/ozone co-exposure study. The September26 rebuild and bounded optimization are complete. This October13 release packages those fixed results; it does **not** retrain the models or edit the manuscript.
 
-- **Training patches (224×224)**: exported from QuPath annotations, used for ViT training/validation.
-- **Inference patches (512×512, stride=256)**: full-slide dense sampling for case-level inference and WSI visualization.
+**Current entrypoint: `rebuild_v6/`.** v6 is the recommended main presentation, with all other completed recipes reported as comparisons. The choice of presentation was made after observing results, not a prospectively specified unique primary model. These are not new independent external-validation results.
 
----
+[中文导航](docs/README_zh.md) · [Reproduce/check results](docs/REPRODUCING.md) · [Methods and limits](docs/METHODS_AND_LIMITATIONS.md) · [Changes from the old pipeline](docs/CHANGELOG_20261013.md)
 
-## Repository modules (where to find the code)
+## Workflow
 
-- `qupath/`  
-  QuPath Groovy scripts only (tile export from annotations).
+```text
+Original QuPath PNGs + source/alias identities
+  → deterministic pixel deduplication and fixed source-aware partitions
+  → A6: train / validation-selected checkpoint + threshold / held-out-source test
+  → A5: three outer folds × three seeds, each held-out animal excluded from fitting
+  → four-flip probabilities on fixed calibrated WSI windows
+  → all-window animal means → equal seed mean
+  → fixed raw Area / IL6 associations + uncertainty and robustness
+```
 
-- `vit_wsi/`  
-  ViT patch classifier + inference + case-level aggregation + evaluation + visualization.
+- Audited original PNG files: **43,335**; unavailable historical derived records excluded: **15,538**.
+- A6 patches: **23,309 train / 7,909 validation / 8,704 test**, from **19 / 5 / 4 source WSIs**.
+- A5: **21 animals**, seven groups of three; **132,032 fixed window identities**. v6 has nine outer-fold/seed models, **396,096 predictions**, 63 seed-animal scores and 21 equal-seed means.
+- Lesion is model index **0**, metric-positive label **1**. No outcome-fitted injury-score calibration, LASSO selection, temperature scaling, ROI-based filtering or test-set threshold selection.
 
-- `pathology_seg/`  
-  Standalone WSI tissue detection / coordinate generation / patch slicing utilities (H5, thumbnails, level check), used to support dense inference (512×512, stride=256).
+## Results
 
----
+| Model recipe | A6 test AUC | 95% source-cluster interval |
+|---|---:|---:|
+| Random ViT v2 | 0.869556 | [0.814904, 0.931134] |
+| Pretrained ViT v3 | 0.868257 | [0.825655, 0.923752] |
+| ResNet-50 baseline | 0.855901 | [0.779518, 0.930580] |
+| Scale-consistent ViT v4 | 0.887736 | [0.829997, 0.943078] |
+| Frozen Phikon-v2 + linear v5 | 0.878963 | [0.772109, 0.946644] |
+| Balanced-sampling ViT v6 | 0.891999 | [0.848038, 0.946250] |
 
-## 1. QuPath Annotation & Training Patch Export (224×224)
+The table uses each recipe's own validation threshold for threshold-dependent metrics. Different initialization/training/preprocessing/precision recipes make this a descriptive comparison, not an isolated architecture superiority test. Four test sources give limited cluster-level precision.
 
-### Core workflow
-1. Annotate lesion regions on WSIs in QuPath (v0.4+).
-2. Run the Groovy export script **`qupath/qupath_tiler_v2.groovy`** to crop tissue regions into **224×224** patches at ~0.5 μm/px (~20×).
-3. Export four patch categories (expert annotation + hard negative mining):
+| Version | Area Pearson r | IL6 Pearson r |
+|---|---:|---:|
+| v2 | 0.525968 | 0.599750 |
+| v3 | 0.643734 | 0.647543 |
+| v4 | 0.628813 | 0.649805 |
+| v5 | 0.652916 | 0.660155 |
+| v6 | 0.699976 | 0.720957 |
 
-| Category       | Definition |
-|----------------|------------|
-| Lesion         | Regions with alveolar destruction, inflammatory infiltration, or hemorrhage |
-| Normal         | Morphologically normal alveolar areas adjacent to lesions |
-| Normal-Far     | Normal lung tissue distant from lesions (spatial negative control) |
-| Normal-Red     | Hard negatives: morphologically normal but densely eosinophilic regions |
+v6 Area: Pearson p=0.000411566, Holm4 p=0.001234700. v6 IL6: Pearson p=0.000226535, Holm4 p=0.000906139. Both Spearman Holm4 p≈0.00594325. Full precision, all nominal/adjusted p-values, intervals and the fixed secondary18 analysis are in [the complete table](results/tables/all_associations_v2_v3_v4_v5_v6.csv).
 
-### Quality control
-The export script enforces patch-level QC:
-- Filters blank areas, coverslip edges, scanning artifacts, and low-tissue-content patches via tissue coverage thresholds.
-- Balances negative sample ratios and integrates hard negatives to improve robustness.
+The v6 within-group-centered correlations are only **0.054569 / 0.173181** (Area/IL6), descriptive without p-values. Do not interpret the across-animal correlations as strong within-group effects. Holm4 controls each recipe's four primary tests, not selection across recipes.
 
----
+![Six recipe ROC comparison](results/figures/a6_all_six_models.png)
 
-## 2. Patch-level ViT Lesion Classification (Lesion vs Non-Lesion)
+![v6 animal associations](results/figures/a5_primary21_v6.png)
 
-A Vision Transformer (ViT) binary classifier distinguishes Lesion from Non-Lesion
-(Normal / Normal-Far / Normal-Red).
+## Contents and quick check
 
-### Model architecture
-- Backbone: ImageNet-pretrained ViT (input resolution 224×224).
-- Head: 2-class linear classifier.
+| Directory | Contents |
+|---|---|
+| `rebuild_v6/` | Portable v6 training, A6 evaluation, dense inference, aggregation, statistics and exact rectangle-field mathematics |
+| `scripts/` | CPU result verifier and authorized-data preparation |
+| `data/` | SHA-bound portable manifests and all132032 calibrated coordinates; **no raw images** |
+| `results/` | All-variant summary/animal tables, v6 validation/test and all nine A5 prediction tables, training histories, plots and check receipts |
+| `tests/` | CPU contract, identity-leakage and numerical-equivalence tests |
+| `archive/20260926/` | Actual original v6/reference source bytes; requires the original sealed dependency environment to execute |
+| `VisualTransformer/` | Earlier workflow retained for history; **not the current v6 entrypoint** |
 
-### Staged fine-tuning strategy
-| Stage | Operation |
-|------|-----------|
-| Stage 1 (`exp_qupath224_finetune`) | Freeze patch embedding + lower blocks; train high-level blocks + head |
-| Stage 2 (`stage2`) | Unfreeze full backbone; lower LR to adapt to mouse lung histology |
-| Stage 3 (`stage3b_clean`) | Short fine-tune on cleaned data to refine boundaries |
+```bash
+python -m pip install -r requirements-analysis.txt
+python scripts/verify_results.py
+```
 
-### Training details (code)
-Training script: **`vit_wsi/pipeline/train_finetune.py`**  
-Core modules: **`vit_wsi/core/{dataset.py, model.py, utils.py}`**
+See [reproduction instructions](docs/REPRODUCING.md) for full bootstrap, data preparation and training/inference commands. The portable adapter has a new checkpoint identity (format106). Original format6 weights are not silently accepted. The published numbers come from the separately audited September26 run, not a fresh execution of the portable adapter.
 
-- Loss: cross-entropy (+ class weighting / sampling).
-- Augmentation: flips + mild color jitter.
-- Metrics: ROC-AUC, accuracy, sensitivity, specificity.
-- Output: best weights `vit_best.pth`.
+## Availability and interpretation
 
----
+Large model checkpoints, original PNGs, whole-slide images, offline libraries and full-resolution heatmap arrays remain in the authors' sealed handoff; they are not committed to Git. This repository is not a complete cloud-machine backup. No public download of raw study data or weights is currently asserted. Contact the repository maintainers for access arrangements.
 
-## 3. WSI-level Inference & Case-level Feature Aggregation (512×512, stride=256)
+ROI annotations are nonexhaustive references. Three dual-ROI cases remain separate and one unannotated case is not labelled Normal. Probability fields are **not pixel segmentation or calibrated lesion-area measurements**. See [all-case heatmap overviews](results/figures/overview_1.png), [overview2](results/figures/overview_2.png), [overview3](results/figures/overview_3.png) and [spatial diagnostics](results/figures/spatial_diagnostics.png). Coverage is not accuracy; all weak cases are retained. Area calibration, IL6 units and tissue pairing still require author records.
 
-Inference is performed on full tissue regions (without QuPath annotations).
+The old8,943-patch/0.852075-AUC result and correlation0.622/0.630 belong to a previous historical reconstruction. They do not describe this release. The older repository's correlation grid-search/LASSO-related injury-score approach and display suppression are superseded; see [change log](docs/CHANGELOG_20261013.md).
 
-### Key steps
-1. **Tissue coordinates / patch grid generation (H5)**  
-   Use scripts under **`pathology_seg/`** to detect tissue regions and generate dense sampling coordinates (512×512, stride=256).  
-   (Entry points: `pathology_seg/1-create_patches_fp.py`, `pathology_seg/2-get_png.py`, `pathology_seg/3-level_check.py`.)
+## Licenses and attribution
 
-2. **TTA inference**  
-   Run **`vit_wsi/pipeline/predict_dual_tta_safe.py`** to apply test-time augmentation and average predictions for stability.
-
-3. **Post-processing**
-   - HSV background filtering: remove near-white / low-saturation patches.
-   - Temperature scaling (e.g., T=2.0): conservative probability calibration.
-
-4. **Feature aggregation**
-   - Patch-level outputs: `all_patches.csv`, grid intermediates (`_rawgrid/*.npy`).
-   - Case-level summary: `case_scores.csv` (area-like metrics, percentiles, density, etc.).
-   - If only `all_patches.csv` is available:
-     - build case table: **`vit_wsi/pipeline/make_case_prob_from_patches.py`**
-     - clean/normalize: **`vit_wsi/pipeline/filter_case_prob.py`**
-   - `case_scores_filtered.csv` does **NOT** contain IL-6/area values; it is merged with external metadata (e.g., `1IL6Area_clean.csv`) downstream.
-
----
-
-## 4. Injury Score Calibration & IL-6/Area Correlation Analysis
-
-Use **`vit_wsi/evaluation/calib_gridsearch_v4.py`** to optimize a continuous pathological injury score.
-
-### Core logic
-1. Grid search over thresholds, nonlinear transforms, normalization schemes.
-2. Align `case_scores_filtered.csv` with `1IL6Area_clean.csv` by case ID.
-3. Select parameters maximizing Pearson correlation between injury score and `log(1+IL-6)` (or transformed area).
-4. Output a 1D continuous injury score for correlation visualization and downstream feature selection.
-
-> Injury score computation relies only on numerical case/patch tables and rawgrid files. Heatmaps are visualization only.
-
----
-
-## 5. Heatmap Visualization & False Positive Suppression
-
-Run **`vit_wsi/visualization/uni_overlay.py`** to map patch probabilities back to WSI coordinates and generate publication-quality overlays.
-
-### Visualization strategy
-1. Grid construction: use the actual stride (256) to fill probability grids.
-2. False positive suppression:
-   - apply fixed thresholding (e.g., 0.64),
-   - remove small connected components (`min_comp_tiles`).
-3. Rendering:
-   - interpolate probabilities on a unified [0,1] scale,
-   - optional contours; enforce `--force_stride 256` to avoid grid artifacts.
+Original repository code retains [Apache2.0](LICENSE). Third-party resources and v5 Phikon-derived results are **not** relicensed under that code license; see [third-party notices](THIRD_PARTY_NOTICES.md) and [results-license scope](results/LICENSE_SCOPE.md). Phikon weights/features are not distributed. Public mouse infection images inspected separately were **not used in v2–v6** and are not redistributed here. No affiliation or endorsement by upstream model providers is implied.

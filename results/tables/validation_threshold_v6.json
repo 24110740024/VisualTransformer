@@ -1,0 +1,9 @@
+{
+  "method": "validation-only Youden J; first np.argmax in sklearn roc_curve order",
+  "threshold": 0.382080078125,
+  "status": "locked",
+  "youden_j": 0.5640445834655786,
+  "validation_auc_lesion": 0.8656236089292023,
+  "checkpoint_sha256": "22b8b2191961188eaa016031760630082d029aa3e09238da62cd6843d7aac499",
+  "validation_manifest_sha256": "d61914b653aa9b3549f3a1c59da275eb79ec0826ef886dfa752f764bc98e1f8e"
+}

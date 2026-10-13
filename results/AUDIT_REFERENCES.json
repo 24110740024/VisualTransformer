@@ -1,0 +1,22 @@
+{
+  "a6": {
+    "source": "reproduction/new_run/v6_independent_audits/a6_20260926T090443Z.json",
+    "original_sha256": "a55fcf7bbc9768279e8a7bf76e65a5311611d39ce734784621eada4122b93494",
+    "original_audit_available_in_sealed_handoff": true
+  },
+  "training": {
+    "source": "reproduction/new_run/v6_independent_audits/training_20260926T104523Z.json",
+    "original_sha256": "aa4a7a8e19a6ae1f98d0e5aacd513e2cf048d49c15f056f094cea84447a70659",
+    "original_audit_available_in_sealed_handoff": true
+  },
+  "a5": {
+    "source": "reproduction/new_run/v6_postprocessing_v1/verified_20260926T112257_810922Z/report_audit.json",
+    "original_sha256": "1c1a08a89f0e88736fa8f66a80bc6c84625bfaf53519ae912583a28350f4c44f",
+    "original_audit_available_in_sealed_handoff": true
+  },
+  "spatial": {
+    "source": "reproduction/new_run/v6_visualization_v1/v6_canonical_20260926T112445Z/report_audit.json",
+    "original_sha256": "40b6c7d284e771a55e50f0751c9f761241fc0728fa2dc9b88f07a8c876fb387f",
+    "original_audit_available_in_sealed_handoff": true
+  }
+}
