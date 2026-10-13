@@ -2,7 +2,7 @@
 
 ## Study scope and labels
 
-The analysis concerns mouse lung H&E histology from a heat and ozone co-exposure study. Reference classes are the recorded QuPath annotations: Lesion and Normal, with Normal-Far and Normal-Red combined as Normal. Lesion has model class index 0 and binary metric label 1.
+The analysis concerns mouse lung H&E histology from a heat and ozone co-exposure study. Patch labels are assigned by the QuPath export procedure using supplied annotations: Lesion centers lie inside included ROIs; Normal, Normal-Far and Normal-Red are sampled outside them and combined as Normal. Annotation selection, filtering and negative sampling are specified in [Patch generation](PATCH_GENERATION.md). Lesion has model class index 0 and binary metric label 1.
 
 ## Data identity and partitioning
 

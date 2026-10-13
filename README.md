@@ -2,7 +2,7 @@
 
 Code and results for patch classification and animal-level scoring of mouse lung H&E whole-slide images in a heat and ozone co-exposure study.
 
-[中文说明](docs/README_zh.md) · [Methods](docs/METHODS_AND_LIMITATIONS.md) · [Reproducibility](docs/REPRODUCING.md) · [Data](data/README.md) · [Results](results/README.md)
+[中文说明](docs/README_zh.md) · [Methods](docs/METHODS_AND_LIMITATIONS.md) · [Patch generation](docs/PATCH_GENERATION.md) · [Reproducibility](docs/REPRODUCING.md) · [Data](data/README.md) · [Results](results/README.md)
 
 ## Overview
 
@@ -49,6 +49,7 @@ Training and image inference additionally require the study image assets, pretra
 
 | Directory | Purpose |
 |---|---|
+| `preprocessing/qupath/` | QuPath patch exporter and input provenance |
 | `rebuild_v6/` | Training, classification evaluation, whole-slide inference, scoring and statistics |
 | `data/` | Fixed split manifests, source identities and window coordinates |
 | `results/` | Predictions, numerical results, figures and training histories |

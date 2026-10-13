@@ -1,0 +1,73 @@
+{
+  "export_script": "qupath_tiler_v2.groovy",
+  "export_script_sha256": "589fe8d0defcb6162352cb7aa8b53f8cf02c0c7e7efb957860cfdc8f6438e139",
+  "script_unchanged": true,
+  "saved_project_versions": [
+    "0.6.0"
+  ],
+  "exact_export_runtime_independently_recorded": false,
+  "original_png_count": 43335,
+  "unique_decoded_pixel_count": 40097,
+  "export_category_counts": {
+    "Lesion": 17074,
+    "Normal-Far": 3988,
+    "Normal-Red": 8544,
+    "Normal": 13729
+  },
+  "annotation_object_counts": {
+    "Region*": 4,
+    "IP_ALV_DYS_INFL": 64,
+    "Unclassified": 1,
+    "Inflammatory cell infiltration": 10,
+    "AlveolarNecrosis_Hemorrhagic": 17,
+    "INF_NEC_GRAN_FIB_HYP_INFL": 2,
+    "EPI_NEC_STR_DST_BLE": 6
+  },
+  "annotation_selection": {
+    "total_objects": 104,
+    "excluded_region_objects": 4,
+    "included_objects": 100,
+    "included_unclassified_objects": 1
+  },
+  "coordinate_validation": {
+    "original_png_centers": 43335,
+    "ordinary_matches": 43332,
+    "boundary_matches": 3,
+    "mismatches": 0,
+    "interpretation": "Agreement with the saved ROI center-inclusion rule, not independent patch-level pathology adjudication."
+  },
+  "model_label_indices": {
+    "Lesion": 0,
+    "Normal": 1
+  },
+  "normal_export_categories": [
+    "Normal",
+    "Normal-Far",
+    "Normal-Red"
+  ],
+  "metric_positive_label": 1,
+  "classification_split_counts": {
+    "train": 23309,
+    "validation": 7909,
+    "test": 8704
+  },
+  "provenance": {
+    "annotation_input": "Existing slide annotations supplied by research collaborators.",
+    "computational_processing": "Patch export and subsequent computational analyses use the supplied annotations.",
+    "original_evidence_sha256": {
+      "png_copy_acceptance": "6833c9344c627c8c9eadc32a216caf19fa9e9506e92998078f1183411981e24b",
+      "verified_original_png_inventory": "aa50665d5545c3cd93dfa97108b20fa2ba5983f0b57009a51978ae69c52f7197",
+      "training_input_audit": "e1aad401be9fdbb58665353f13fa931ee65a15a250cafdcb859f7a68fee4da75",
+      "frozen_partition_specification": "07bed7d008e530f627cb9dbba962a3ec10a7b2b4c20ddbca40f4e80d95d3d76b",
+      "annotation_and_coordinate_audit": "9fd43479dba6ed18c9a8dd8755b909e7a362a0bc9b107f4cec19574b3769be13"
+    },
+    "public_manifest_index": "../../data/MANIFEST_INDEX.json"
+  },
+  "verification_scope": {
+    "previous_full_png_integrity_and_coordinate_audits": true,
+    "current_role_rows_reconciled": 12,
+    "current_live_png_samples_checked": 8,
+    "export_reexecuted_for_repository_publication": false
+  },
+  "raw_images_and_annotations_included": false
+}

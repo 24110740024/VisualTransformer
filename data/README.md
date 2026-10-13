@@ -1,6 +1,6 @@
 # Data and metadata
 
-This directory contains metadata for reproducing the reported partitions and inference locations. Raw PNG images, whole-slide images and model weights are not included.
+This directory contains metadata for reproducing the reported partitions and inference locations. Raw PNG images, whole-slide images and model weights are not included. Generation of the original classification patches is described in [QuPath patch generation](../docs/PATCH_GENERATION.md).
 
 | File | Contents |
 |---|---|

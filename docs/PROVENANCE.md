@@ -8,9 +8,14 @@ The reported numerical results were generated on 26 September 2026. Prediction t
 
 The distributed checkpoint format is 106; the original run used format 6. The formats require their matching code and configuration. CPU tests and statistical verification have been completed, but the distributed implementation has not been evaluated by repeating the complete GPU training and inference pipeline. Reproduction on a different software or hardware stack may therefore yield different fitted models.
 
+## Patch export provenance
+
+The unmodified QuPath export script and its input-generation record are provided in `preprocessing/qupath/`. The supplied script matches the saved study version byte for byte. [Patch generation](PATCH_GENERATION.md) distinguishes annotation inputs, algorithmically sampled negative classes, accepted PNG exports and the separate dense-inference windows.
+
 ## Verification records
 
 - `RELEASE_FILES_SHA256.json`: file-level SHA256 inventory.
+- `preprocessing/qupath/EXPORT_PROVENANCE.json`: patch-export script hash, counts and source-evidence hashes.
 - `data/MANIFEST_INDEX.json`: original and distributed manifest hashes and row counts.
 - `data/MANIFEST_ARCHIVE.json`: integrity information for the multipart manifest archive.
 - `results/predictions/PROVENANCE.json`: source and export hashes for dense predictions.
