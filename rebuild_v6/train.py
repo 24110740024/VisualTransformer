@@ -1,12 +1,13 @@
-"""Finetune one officially pretrained torchvision ViT candidate on frozen v2 inputs.
+"""Fine-tune an ImageNet-initialized ViT-B/16 on the published data partitions.
 
 CSV fields: path, label (0=Lesion, 1=Normal), source_id, split.
 Relative image paths are resolved against the CSV directory. When supplied,
 pixel_sha256 or pixel_hash must be populated for every row of both manifests.
 Repeated paths represent separate logical records only when every row has a
 unique historical_file identifier; their multiplicity and label conflicts are reported.
-Resume accepts this trainer's last.pth only; it is not pretrained initialization.
+Resume uses last.pth from the same run and configuration.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -30,16 +31,35 @@ from sklearn.metrics import roc_auc_score
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 from scale_transforms import build_transforms
-from candidate_model import (HERE, INITIALIZATION, MODEL_NAME, ARCHITECTURE,
-    create_model, build_optimizer, training_code_hashes, enforce_settings, verify_weights)
+from candidate_model import (
+    HERE,
+    INITIALIZATION,
+    MODEL_NAME,
+    ARCHITECTURE,
+    create_model,
+    build_optimizer,
+    training_code_hashes,
+    enforce_settings,
+    verify_weights,
+)
 from candidate_guard import validate_execution_protocol, gpu_guard
 import torchvision
 from sampling_binding import load_training_probabilities
 
 FORMAT_VERSION = 106
 CLASSES = ["Lesion", "Normal"]
-HISTORY_FIELDS = ["epoch", "train_loss", "train_acc", "val_loss", "val_acc",
-                  "val_auc_lesion", "lr_used", "head_lr_used", "seconds", "improved"]
+HISTORY_FIELDS = [
+    "epoch",
+    "train_loss",
+    "train_acc",
+    "val_loss",
+    "val_acc",
+    "val_auc_lesion",
+    "lr_used",
+    "head_lr_used",
+    "seconds",
+    "improved",
+]
 
 
 def sha256(path):
@@ -56,8 +76,7 @@ def read_manifest(path, expected_split):
         reader = csv.DictReader(handle)
         if not {"path", "label", "source_id", "split"}.issubset(reader.fieldnames or []):
             raise ValueError(f"{path}: required columns path,label,source_id,split")
-        hash_fields = [key for key in ("pixel_sha256", "pixel_hash")
-                       if key in reader.fieldnames]
+        hash_fields = [key for key in ("pixel_sha256", "pixel_hash") if key in reader.fieldnames]
         rows = []
         seen_paths = set()
         duplicated_paths = set()
@@ -65,7 +84,9 @@ def read_manifest(path, expected_split):
             if row["label"] not in ("0", "1"):
                 raise ValueError(f"{path}:{line}: label must be 0 or 1")
             if row["split"] != expected_split:
-                raise ValueError(f"{path}:{line}: expected split={expected_split}; test is not accepted")
+                raise ValueError(
+                    f"{path}:{line}: expected split={expected_split}; test is not accepted"
+                )
             if not row["source_id"].strip() or not row["path"].strip():
                 raise ValueError(f"{path}:{line}: empty source_id or image path")
             image_path = Path(row["path"])
@@ -81,14 +102,19 @@ def read_manifest(path, expected_split):
             values = [row[key].strip().lower() for key in hash_fields]
             if hash_fields and (not all(values) or len(set(values)) != 1):
                 raise ValueError(f"{path}:{line}: missing or inconsistent pixel hash")
-            row.update(path=str(image_path), label=int(row["label"]),
-                       source_id=row["source_id"].strip(),
-                       _pixel_hash=values[0] if values else None)
+            row.update(
+                path=str(image_path),
+                label=int(row["label"]),
+                source_id=row["source_id"].strip(),
+                _pixel_hash=values[0] if values else None,
+            )
             rows.append(row)
     if duplicated_paths:
         identifiers = [row.get("historical_file", "").strip() for row in rows]
         if not all(identifiers) or len(set(identifiers)) != len(identifiers):
-            raise ValueError(f"{path}: repeated paths require unique historical_file identifiers on every row")
+            raise ValueError(
+                f"{path}: repeated paths require unique historical_file identifiers on every row"
+            )
     if not rows or {row["label"] for row in rows} != {0, 1}:
         raise ValueError(f"{path}: both Lesion and Normal are required")
     return rows
@@ -98,7 +124,9 @@ def preflight(train_manifest, val_manifest):
     train = read_manifest(train_manifest, "train")
     val = read_manifest(val_manifest, "val")
     for key in ("source_id", "path"):
-        values = lambda rows: {os.path.normcase(row[key]) if key == "path" else row[key] for row in rows}
+        values = lambda rows: {
+            os.path.normcase(row[key]) if key == "path" else row[key] for row in rows
+        }
         overlap = values(train) & values(val)
         if overlap:
             raise ValueError(f"train/val {key} overlap: {sorted(overlap)[:8]}")
@@ -110,8 +138,10 @@ def preflight(train_manifest, val_manifest):
         if overlap:
             raise ValueError(f"train/val pixel hash overlap: {sorted(overlap)[:8]}")
     summary = {
-        "classes": CLASSES, "positive_class_index": 0,
-        "source_overlap": 0, "pixel_hash_check": "provided_hashes" if all(hash_presence) else "unavailable",
+        "classes": CLASSES,
+        "positive_class_index": 0,
+        "source_overlap": 0,
+        "pixel_hash_check": "provided_hashes" if all(hash_presence) else "unavailable",
         "manifests": {},
     }
     for split, path, rows in (("train", train_manifest, train), ("val", val_manifest, val)):
@@ -119,10 +149,13 @@ def preflight(train_manifest, val_manifest):
         for row in rows:
             path_labels.setdefault(os.path.normcase(row["path"]), set()).add(row["label"])
         summary["manifests"][split] = {
-            "path": str(Path(path).resolve()), "sha256": sha256(path), "rows": len(rows),
+            "path": str(Path(path).resolve()),
+            "sha256": sha256(path),
+            "rows": len(rows),
             "source_ids": sorted({row["source_id"] for row in rows}),
-            "class_counts": {CLASSES[label]: sum(row["label"] == label for row in rows)
-                             for label in (0, 1)},
+            "class_counts": {
+                CLASSES[label]: sum(row["label"] == label for row in rows) for label in (0, 1)
+            },
             "repeated_path_rows": len(rows) - len(path_labels),
             "paths_used_with_both_labels": sum(len(labels) > 1 for labels in path_labels.values()),
         }
@@ -151,10 +184,13 @@ def seed_worker(_worker_id):
 
 
 def rng_state(generators):
-    return {"python": random.getstate(), "numpy": np.random.get_state(),
-            "torch": torch.get_rng_state(),
-            "cuda": torch.cuda.get_rng_state_all() if torch.cuda.is_available() else [],
-            "generators": {key: gen.get_state() for key, gen in generators.items()}}
+    return {
+        "python": random.getstate(),
+        "numpy": np.random.get_state(),
+        "torch": torch.get_rng_state(),
+        "cuda": torch.cuda.get_rng_state_all() if torch.cuda.is_available() else [],
+        "generators": {key: gen.get_state() for key, gen in generators.items()},
+    }
 
 
 def restore_rng(state, generators):
@@ -207,18 +243,27 @@ def parse_args(argv=None):
     parser.add_argument("--bs", type=int, default=32)
     parser.add_argument("--lr", type=float, default=1e-5)
     parser.add_argument("--head_lr", type=float, default=1e-4)
-    parser.add_argument("--weight_decay", type=float, default=.05)
+    parser.add_argument("--weight_decay", type=float, default=0.05)
     parser.add_argument("--patience", type=int, default=6)
     parser.add_argument("--weighted_sampler", action="store_true")
     parser.add_argument("--class_weight", action="store_true")
     parser.add_argument("--num_workers", type=int, default=4)
     parser.add_argument("--device", choices=("auto", "cuda", "cpu"), default="auto")
-    parser.add_argument("--resume", type=Path, help="Only this run's last.pth, never an old/pretrained checkpoint")
-    parser.add_argument("--preflight_only", action="store_true", help="Validate manifests without constructing a model")
+    parser.add_argument("--resume", type=Path, help="Resume from this run's last.pth checkpoint")
+    parser.add_argument(
+        "--preflight_only",
+        action="store_true",
+        help="Validate manifests without constructing a model",
+    )
     args = parser.parse_args(argv)
     if min(args.epochs, args.bs, args.patience) <= 0 or args.num_workers < 0:
         parser.error("epochs, bs, patience must be positive and num_workers nonnegative")
-    if not np.isfinite(args.lr) or args.lr <= 0 or not np.isfinite(args.weight_decay) or args.weight_decay < 0:
+    if (
+        not np.isfinite(args.lr)
+        or args.lr <= 0
+        or not np.isfinite(args.weight_decay)
+        or args.weight_decay < 0
+    ):
         parser.error("lr must be positive and weight_decay nonnegative, both finite")
     if not 0 <= args.seed < 2**32:
         parser.error("seed must be in [0, 2**32)")
@@ -229,9 +274,12 @@ def main(argv=None):
     args = parse_args(argv)
     enforce_settings(args)
     from data import validate_roles
-    validate_roles({'train': args.train_manifest, 'val': args.val_manifest}, verify_pixels=True)
+
+    validate_roles({"train": args.train_manifest, "val": args.val_manifest}, verify_pixels=True)
     train_rows, val_rows, audit = preflight(args.train_manifest, args.val_manifest)
-    sampling_weights, sampling_identity = load_training_probabilities(args.train_manifest, train_rows)
+    sampling_weights, sampling_identity = load_training_probabilities(
+        args.train_manifest, train_rows
+    )
     if args.preflight_only:
         print(json.dumps(audit, ensure_ascii=False, indent=2))
         return
@@ -244,33 +292,56 @@ def main(argv=None):
         raise ValueError("CUDA requested but unavailable")
     device = torch.device(device_name)
     out_dir = args.out_dir.resolve()
-    configuration = {key: str(value.resolve()) if isinstance(value, Path) else value
-                     for key, value in vars(args).items() if key not in ("resume", "preflight_only")}
-    configuration.update(device_resolved=device_name, initialization=INITIALIZATION, model=MODEL_NAME,
-                         selection="validation Lesion-positive AUC, strict improvement",
-                         architecture=dict(ARCHITECTURE), manifests=audit, sampling=sampling_identity,
-                         pretrained_weights=verify_weights(),
-                         protocol_sha256=sha256(HERE / "EXECUTION_PROTOCOL.json"),
-                         code_sha256=training_code_hashes(),
-                         runtime={"python":platform.python_version(), "torch":str(torch.__version__),
-                                  "torchvision":torchvision.__version__, "numpy":np.__version__,
-                                  "cuda":torch.version.cuda, "cudnn_deterministic":True,
-                                  "cudnn_benchmark":False,
-                                  "cuda_matmul_allow_tf32":torch.backends.cuda.matmul.allow_tf32,
-                                  "cudnn_allow_tf32":torch.backends.cudnn.allow_tf32})
-    config_hash = hashlib.sha256(json.dumps(configuration, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+    configuration = {
+        key: str(value.resolve()) if isinstance(value, Path) else value
+        for key, value in vars(args).items()
+        if key not in ("resume", "preflight_only")
+    }
+    configuration.update(
+        device_resolved=device_name,
+        initialization=INITIALIZATION,
+        model=MODEL_NAME,
+        selection="validation Lesion-positive AUC, strict improvement",
+        architecture=dict(ARCHITECTURE),
+        manifests=audit,
+        sampling=sampling_identity,
+        pretrained_weights=verify_weights(),
+        protocol_sha256=sha256(HERE / "EXECUTION_PROTOCOL.json"),
+        code_sha256=training_code_hashes(),
+        runtime={
+            "python": platform.python_version(),
+            "torch": str(torch.__version__),
+            "torchvision": torchvision.__version__,
+            "numpy": np.__version__,
+            "cuda": torch.version.cuda,
+            "cudnn_deterministic": True,
+            "cudnn_benchmark": False,
+            "cuda_matmul_allow_tf32": torch.backends.cuda.matmul.allow_tf32,
+            "cudnn_allow_tf32": torch.backends.cudnn.allow_tf32,
+        },
+    )
+    config_hash = hashlib.sha256(
+        json.dumps(configuration, sort_keys=True, ensure_ascii=False).encode()
+    ).hexdigest()
     checkpoint = None
     if args.resume:
         if args.resume.resolve() != out_dir / "last.pth":
             raise ValueError("--resume must point to this out_dir/last.pth")
         # Explicit local checkpoint contains Python/NumPy RNG tuples in addition to tensors.
         checkpoint = torch.load(args.resume, map_location="cpu", weights_only=False)
-        if checkpoint.get("format_version") != FORMAT_VERSION or checkpoint.get("config_sha256") != config_hash:
+        if (
+            checkpoint.get("format_version") != FORMAT_VERSION
+            or checkpoint.get("config_sha256") != config_hash
+        ):
             raise ValueError("Resume configuration, manifest bytes, code, or runtime mismatch")
     elif out_dir.exists() and any(out_dir.iterdir()):
-        raise ValueError("Fresh training requires an empty output directory; use --resume to continue")
+        raise ValueError(
+            "Fresh training requires an empty output directory; use --resume to continue"
+        )
     out_dir.mkdir(parents=True, exist_ok=True)
-    atomic_json({"config_sha256": config_hash, "configuration": configuration}, out_dir / "config.json")
+    atomic_json(
+        {"config_sha256": config_hash, "configuration": configuration}, out_dir / "config.json"
+    )
 
     random.seed(args.seed)
     np.random.seed(args.seed)
@@ -279,19 +350,32 @@ def main(argv=None):
         torch.cuda.manual_seed_all(args.seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
-    generators = {key: torch.Generator().manual_seed(args.seed + offset)
-                  for offset, key in enumerate(("sampling", "train_workers", "val_workers"))}
+    generators = {
+        key: torch.Generator().manual_seed(args.seed + offset)
+        for offset, key in enumerate(("sampling", "train_workers", "val_workers"))
+    }
     train_set, val_set = ManifestDataset(train_rows, True), ManifestDataset(val_rows, False)
     counts = np.bincount([row["label"] for row in train_rows], minlength=2)
     if args.weighted_sampler:
         weights = sampling_weights
-        sampler = WeightedRandomSampler(weights, len(weights), replacement=True, generator=generators["sampling"])
+        sampler = WeightedRandomSampler(
+            weights, len(weights), replacement=True, generator=generators["sampling"]
+        )
     else:
         sampler = RandomSampler(train_set, generator=generators["sampling"])
-    loader_options = dict(batch_size=args.bs, num_workers=args.num_workers,
-                          pin_memory=device.type == "cuda", worker_init_fn=seed_worker, persistent_workers=False)
-    train_loader = DataLoader(train_set, sampler=sampler, generator=generators["train_workers"], **loader_options)
-    val_loader = DataLoader(val_set, shuffle=False, generator=generators["val_workers"], **loader_options)
+    loader_options = dict(
+        batch_size=args.bs,
+        num_workers=args.num_workers,
+        pin_memory=device.type == "cuda",
+        worker_init_fn=seed_worker,
+        persistent_workers=False,
+    )
+    train_loader = DataLoader(
+        train_set, sampler=sampler, generator=generators["train_workers"], **loader_options
+    )
+    val_loader = DataLoader(
+        val_set, shuffle=False, generator=generators["val_workers"], **loader_options
+    )
     model = create_model(pretrained=True).to(device)
     if args.class_weight:
         raise ValueError("v6 requires unweighted cross entropy")
@@ -315,21 +399,42 @@ def main(argv=None):
             atomic_torch_save(checkpoint, out_dir / "best.pth")
         else:
             previous_best = torch.load(out_dir / "best.pth", map_location="cpu", weights_only=False)
-            if previous_best["config_sha256"] != config_hash or previous_best["epoch"] != best_epoch:
+            if (
+                previous_best["config_sha256"] != config_hash
+                or previous_best["epoch"] != best_epoch
+            ):
                 raise ValueError("Selected best checkpoint differs from last committed epoch")
-        atomic_json({"best_epoch":best_epoch,"best_val_auc_lesion":best_auc,
-                     "completed_epoch":checkpoint["epoch"],"no_improve":no_improve,
-                     "config_sha256":config_hash}, out_dir / "status.json")
+        atomic_json(
+            {
+                "best_epoch": best_epoch,
+                "best_val_auc_lesion": best_auc,
+                "completed_epoch": checkpoint["epoch"],
+                "no_improve": no_improve,
+                "config_sha256": config_hash,
+            },
+            out_dir / "status.json",
+        )
         write_history(history, out_dir / "history.csv")
         if no_improve >= args.patience:
             print("This run already stopped for patience; no additional training performed.")
             return
 
-    print(json.dumps({"event": "training_started", "device": str(device),
-                      "gpu": torch.cuda.get_device_name() if device.type == "cuda" else None,
-                      "seed": args.seed, "train_records": len(train_set), "val_records": len(val_set),
-                      "batches_per_epoch": len(train_loader), "start_epoch": start_epoch,
-                      "config_sha256": config_hash}), flush=True)
+    print(
+        json.dumps(
+            {
+                "event": "training_started",
+                "device": str(device),
+                "gpu": torch.cuda.get_device_name() if device.type == "cuda" else None,
+                "seed": args.seed,
+                "train_records": len(train_set),
+                "val_records": len(val_set),
+                "batches_per_epoch": len(train_loader),
+                "start_epoch": start_epoch,
+                "config_sha256": config_hash,
+            }
+        ),
+        flush=True,
+    )
 
     for epoch in range(start_epoch, args.epochs + 1):
         started, lr_used = time.perf_counter(), optimizer.param_groups[0]["lr"]
@@ -343,7 +448,9 @@ def main(argv=None):
                 logits = model(image)
                 loss = criterion(logits, label)
             if not torch.isfinite(loss):
-                raise RuntimeError(f"Nonfinite training loss at epoch {epoch}; last completed epoch remains resumable")
+                raise RuntimeError(
+                    f"Nonfinite training loss at epoch {epoch}; last completed epoch remains resumable"
+                )
             scaler.scale(loss).backward()
             scaler.step(optimizer)
             scaler.update()
@@ -351,10 +458,15 @@ def main(argv=None):
             train_correct += (logits.argmax(1) == label).sum().item()
             train_total += label.size(0)
             if batch_index == 1 or batch_index % 100 == 0 or batch_index == len(train_loader):
-                progress = {"event": "batch_progress", "phase": "train", "epoch": epoch,
-                            "batch": batch_index, "batches": len(train_loader),
-                            "elapsed_seconds": time.perf_counter()-started,
-                            "train_loss_so_far": train_loss/train_total}
+                progress = {
+                    "event": "batch_progress",
+                    "phase": "train",
+                    "epoch": epoch,
+                    "batch": batch_index,
+                    "batches": len(train_loader),
+                    "elapsed_seconds": time.perf_counter() - started,
+                    "train_loss_so_far": train_loss / train_total,
+                }
                 atomic_json(progress, out_dir / "live.json")
                 print(json.dumps(progress), flush=True)
         scheduler.step()
@@ -362,7 +474,9 @@ def main(argv=None):
         val_loss, val_correct, val_total, probabilities, targets = 0.0, 0, 0, [], []
         with torch.no_grad():
             for image, label in val_loader:
-                image, label = image.to(device, non_blocking=True), label.to(device, non_blocking=True)
+                image, label = image.to(device, non_blocking=True), label.to(
+                    device, non_blocking=True
+                )
                 with torch.amp.autocast("cuda", enabled=device.type == "cuda"):
                     logits = model(image)
                     loss = criterion(logits, label)
@@ -373,31 +487,66 @@ def main(argv=None):
                 targets.extend((label == 0).long().cpu().tolist())
         val_auc = float(roc_auc_score(targets, probabilities))
         if not np.isfinite(val_auc) or not np.isfinite(val_loss):
-            raise RuntimeError("Nonfinite validation metrics; last completed epoch remains resumable")
+            raise RuntimeError(
+                "Nonfinite validation metrics; last completed epoch remains resumable"
+            )
         improved = val_auc > best_auc
         if improved:
             best_auc, best_epoch, no_improve = val_auc, epoch, 0
         else:
             no_improve += 1
-        history.append(dict(epoch=epoch, train_loss=train_loss/train_total, train_acc=train_correct/train_total,
-                            val_loss=val_loss/val_total, val_acc=val_correct/val_total, val_auc_lesion=val_auc,
-                            lr_used=lr_used, head_lr_used=head_lr_used, seconds=time.perf_counter()-started, improved=improved))
-        state = {"format_version": FORMAT_VERSION, "config_sha256": config_hash,
-                 "configuration": configuration, "model": model.state_dict(), "optimizer": optimizer.state_dict(),
-                 "scheduler": scheduler.state_dict(), "scaler": scaler.state_dict(), "epoch": epoch,
-                 "best_auc": best_auc, "best_epoch": best_epoch, "no_improve": no_improve,
-                 "history": history, "rng": rng_state(generators), "classes": CLASSES,
-                 "positive_class_index": 0, "initialization": INITIALIZATION}
+        history.append(
+            dict(
+                epoch=epoch,
+                train_loss=train_loss / train_total,
+                train_acc=train_correct / train_total,
+                val_loss=val_loss / val_total,
+                val_acc=val_correct / val_total,
+                val_auc_lesion=val_auc,
+                lr_used=lr_used,
+                head_lr_used=head_lr_used,
+                seconds=time.perf_counter() - started,
+                improved=improved,
+            )
+        )
+        state = {
+            "format_version": FORMAT_VERSION,
+            "config_sha256": config_hash,
+            "configuration": configuration,
+            "model": model.state_dict(),
+            "optimizer": optimizer.state_dict(),
+            "scheduler": scheduler.state_dict(),
+            "scaler": scaler.state_dict(),
+            "epoch": epoch,
+            "best_auc": best_auc,
+            "best_epoch": best_epoch,
+            "no_improve": no_improve,
+            "history": history,
+            "rng": rng_state(generators),
+            "classes": CLASSES,
+            "positive_class_index": 0,
+            "initialization": INITIALIZATION,
+        }
         atomic_torch_save(state, out_dir / "last.pth")
         if improved:
             atomic_torch_save(state, out_dir / "best.pth")
         write_history(history, out_dir / "history.csv")
-        atomic_json({"best_epoch": best_epoch, "best_val_auc_lesion": best_auc,
-                     "completed_epoch": epoch, "no_improve": no_improve,
-                     "config_sha256": config_hash}, out_dir / "status.json")
+        atomic_json(
+            {
+                "best_epoch": best_epoch,
+                "best_val_auc_lesion": best_auc,
+                "completed_epoch": epoch,
+                "no_improve": no_improve,
+                "config_sha256": config_hash,
+            },
+            out_dir / "status.json",
+        )
         print(json.dumps(history[-1]), flush=True)
         if no_improve >= args.patience:
-            print(f"Early stopping after epoch {epoch}; best validation AUC epoch {best_epoch}", flush=True)
+            print(
+                f"Early stopping after epoch {epoch}; best validation AUC epoch {best_epoch}",
+                flush=True,
+            )
             break
 
 

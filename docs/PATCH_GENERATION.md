@@ -1,6 +1,6 @@
 # QuPath patch generation
 
-The classification dataset consists of PNG patches exported from mouse lung H&E whole-slide images using existing QuPath annotations supplied by research collaborators. Patch export and downstream computational analyses used those annotations; the export procedure does not create new expert annotations or constitute a separate patch-by-patch pathological review.
+The classification dataset consists of PNG patches exported from mouse lung H&E whole-slide images using QuPath annotations supplied by research collaborators. Lesion labels derive from those annotations, and the exporter samples negative patches from eligible locations outside them.
 
 The [export script](../preprocessing/qupath/qupath_tiler_v2.groovy) is supplied without modification. [Export provenance](../preprocessing/qupath/EXPORT_PROVENANCE.json) records its SHA256, export counts and links to the fixed training manifests. Saved projects record QuPath 0.6.0. The script header specifies QuPath 0.4+, but the exact application runtime used for each export was not independently recorded.
 
@@ -38,7 +38,7 @@ The physical field of view depends on source calibration. The script substitutes
 | `Normal-Far` | Eligible external centers satisfying a distance criterion; target `round(0.5 × P)` |
 | `Normal-Red` | Eligible external centers selected using redness or texture, with fallback sampling; target `round(0.5 × P)` |
 
-These are target counts, not guaranteed yields. The combined negative target can approach 2P. The three Normal export categories are combined into the Normal model class; they are not three additional model outputs.
+Actual yields depend on the available eligible patches. The combined negative target can approach 2P. All three Normal export categories form the Normal model class.
 
 Far and Red sampling initially require a distance of 2,000 µm. Distance is calculated to annotation bounding rectangles, with an explicit inside-ROI check; it is not the exact distance to an irregular lesion boundary. Red candidates additionally exceed either the 65th percentile of mean CIELAB a* or the 50th percentile of grayscale standard deviation in the eligible candidate pool.
 
@@ -56,7 +56,7 @@ For every export, the returned image must be 224 × 224 and pass the background 
 - Mean grayscale greater than 220 with standard deviation below 12.
 - More than 85% low-optical-density pixels, where summed RGB optical density is below 0.25 and each channel uses `-ln((channel + 1) / 256)`.
 
-Normal-category exports additionally require estimated tissue fraction of at least 0.15 and reject patches whose top or bottom 10% band has mean grayscale below 140. The latter dark-band filter is not applied in the Lesion export branch. These are image-selection heuristics, not a pixel-level tissue or lesion segmentation.
+Normal-category exports additionally require estimated tissue fraction of at least 0.15 and reject patches whose top or bottom 10% band has mean grayscale below 140. The latter dark-band filter is not applied in the Lesion export branch. These heuristics select patches for export.
 
 ## Output and connection to training
 
@@ -80,4 +80,4 @@ All 43,335 PNG centers were checked against their corresponding saved project ge
 
 The PNG exports are the annotated classification dataset. The 132,032 fixed whole-slide inference windows used for animal scoring are a separate input set. For v6, these use 408/409-pixel source windows resized to 224 pixels, with four-flip probability averaging. The export script does not generate that dense inference manifest. A slide without a saved ROI can undergo whole-slide inference without contributing automatically labeled Normal training patches.
 
-The script, saved project metadata and accepted exports document the input-generation process. QuPath export was not re-executed for this repository addition. Reproducing the exact dataset requires the corresponding source images, saved project annotations and fixed identity manifests, rather than newly drawing ROIs or treating fresh exports as the same dataset.
+Reproducing the reported dataset requires the corresponding source images, saved project annotations and fixed identity manifests. New exports should be checked against those identities before comparison with the reported dataset.

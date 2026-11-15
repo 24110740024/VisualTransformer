@@ -15,7 +15,7 @@
 | `tables/spatial_per_reference.csv` | Coverage and annotated-center spatial summaries |
 | `tables/spatial_per_included_object.csv` | Object-level spatial summaries |
 
-The primary association analysis uses all 21 animals. The fixed 18-animal sensitivity analysis is reported separately. Window, seed and annotation-version counts are not animal sample sizes.
+The primary association analysis uses all 21 animals. The fixed 18-animal sensitivity analysis is reported separately.
 
 ## Predictions
 
@@ -27,6 +27,6 @@ In classification tables, `label_index = 0` corresponds to Lesion, while `y_lesi
 
 ## Interpretation and verification
 
-The comparisons are exploratory and use shared test sources. The source-cluster AUC interval has four source clusters. Spatial reference coverage is a measure of evaluated extent, not accuracy or segmentation overlap. Full methodological limits are described in [Methods](../docs/METHODS_AND_LIMITATIONS.md).
+The comparisons are exploratory and share four test sources. [Methods](../docs/METHODS_AND_LIMITATIONS.md) describes the source-cluster intervals, animal-level analysis and spatial reference coverage.
 
 `python scripts/verify_results.py --full-bootstrap` recomputes the included prediction-derived statistics. Phikon-derived v5 entries and comparison displays retain the license scope described in [LICENSE_SCOPE.md](LICENSE_SCOPE.md).

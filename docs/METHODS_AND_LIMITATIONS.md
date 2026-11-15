@@ -28,7 +28,7 @@ The ViT-B/16 backbone is initialized with torchvision ImageNet1K V1 weights, and
 
 AdamW uses learning rates of 1e-5 for the backbone and 1e-4 for the head, weight decay 0.05, a 20-epoch cosine schedule and batch size 32. Training runs for at most 20 epochs, with patience 6 and checkpoint selection by strict improvement in validation Lesion AUC. Computation uses CUDA FP16. The classification model uses seed 42; each of the three outer folds uses seeds 42, 43 and 44.
 
-Within each training role, each class receives total sampling probability 0.5. Conditional on class, source probability is proportional to the square root of its patch count. Each epoch samples N patches with replacement, where N is the training-role size; cross entropy is unweighted. This changes sampling frequency rather than biological sample size, and small source-class subsets can be sampled repeatedly.
+Within each training role, each class receives total sampling probability 0.5. Conditional on class, source probability is proportional to the square root of its patch count. Each epoch samples N patches with replacement, where N is the training-role size; cross entropy is unweighted. Small source-class subsets can be sampled repeatedly within an epoch.
 
 ## Prediction and animal scores
 
@@ -36,7 +36,7 @@ Classification inference uses complete PNGs without test-time augmentation. The 
 
 Whole-slide analysis retains 132,032 fixed window identities. The physical field of view is represented by 408/409-pixel level-0 windows for v4–v6, corresponding to 224 pixels at a target resolution of 0.5 µm/pixel. The v2/v3 windows are 512 pixels. Integer placement of 409-pixel windows produces a documented −0.5 source-pixel center offset. Dense crops are resized to 224 pixels using OpenCV INTER_AREA.
 
-Dense prediction averages softmax probabilities from the original, horizontal, vertical and combined flips. For v2/v3/v4/v6, each animal's score is the mean probability across its windows, followed by an equal average across the three seeds. No outcome fitting, ROI filtering or temperature calibration is applied to this score. The v5 model uses one deterministic classifier per outer fold, with per-image L2-normalized CLS features and fixed C = 1 balanced logistic regression; it is not a three-seed ensemble.
+Dense prediction averages softmax probabilities from the original, horizontal, vertical and combined flips. For v2/v3/v4/v6, each animal's score is the mean probability across its windows, followed by an equal average across the three seeds. This score uses the fixed windows without outcome fitting, ROI filtering or temperature calibration. The v5 model uses one deterministic classifier per outer fold, with per-image L2-normalized CLS features and fixed C = 1 balanced logistic regression.
 
 ## Statistical analysis
 

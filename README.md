@@ -31,7 +31,7 @@ The v6 animal scores have Pearson correlations of 0.699976 with Area and 0.72095
 
 ![Animal-level associations](results/figures/a5_primary21_v6.png)
 
-These comparisons are exploratory: configurations were evaluated on the same test sources, and v6 was selected for presentation after results were examined. Their numerical ordering does not establish superiority on an independent cohort. Correlations are primarily across experimental groups; within-group-centered correlations for v6 are 0.054569 and 0.173181. Further interpretation and sample-size limitations are described in [Methods](docs/METHODS_AND_LIMITATIONS.md).
+These exploratory comparisons share four test sources, and v6 was selected for presentation after the results were examined. Animal associations are based on 21 animals and are primarily across experimental groups; within-group-centered correlations for v6 are 0.054569 and 0.173181. [Methods](docs/METHODS_AND_LIMITATIONS.md) describes the study design, uncertainty and interpretation.
 
 ## Reproduce the reported statistics
 
@@ -62,7 +62,7 @@ The file-name identifiers `a6` and `a5` denote patch classification and cross-fi
 
 ## Data and model availability
 
-Split metadata, coordinates, predictions and summary results are included. Original study images and trained model checkpoints are not hosted in this repository. Access requests should be directed to the repository maintainers. The software distribution and the implementation used to generate the reported results are distinguished in [Implementation provenance](docs/PROVENANCE.md).
+Split metadata, coordinates, predictions and summary results are included. For access to original study images and trained model checkpoints, contact the repository maintainers. [Implementation provenance](docs/PROVENANCE.md) describes the reported model runs and the distributed software.
 
 ## License
 

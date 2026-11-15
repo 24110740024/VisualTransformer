@@ -35,4 +35,4 @@ Image-based analyses require the additional asset mapping options described in [
 | `path` / `source_path` | Relative path expected after asset preparation |
 | `x`, `y`, `crop_size`, `level` | Level-0 window origin and footprint in source pixels |
 
-Relative paths are resolved against the extracted manifest directory. File names and repeated windows do not define independent biological samples. Model prediction and outcome tables are documented in [Results](../results/README.md).
+Relative paths are resolved against the extracted manifest directory. Model prediction and outcome tables are documented in [Results](../results/README.md); the animal-level analysis unit is described in [Methods](../docs/METHODS_AND_LIMITATIONS.md).

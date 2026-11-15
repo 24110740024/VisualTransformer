@@ -22,4 +22,4 @@ The unmodified QuPath export script and its input-generation record are provided
 - `results/RELEASE_NUMERIC_CHECK.json`: numerical verification summary.
 - `tests/reference/SOURCE_SHA256.json`: original-source and extracted-fixture hashes used by equivalence tests.
 
-The reference files are test inputs, not additional executable workflows. Full training records, original model checkpoints and image assets are retained by the authors. Scientific data, predicted probabilities and fitted model outputs are unchanged by repository documentation or packaging updates.
+The files in `tests/reference/` are parsed as inputs to the equivalence tests. Full training records, original model checkpoints and image assets are retained by the authors.

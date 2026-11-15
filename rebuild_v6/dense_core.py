@@ -8,8 +8,10 @@ import torch
 from torch.utils.data import Dataset
 from jpeg_decoder import decode_jpeg_tile
 
+
 class TiledJpegReader:
-    """Top-left, 8-bit contiguous JPEG TIFF reader; never allocates full WSI."""
+    """Read regions from top-left-oriented, 8-bit contiguous JPEG TIFF tiles."""
+
     def __init__(self, path, cache_tiles=32):
         if cache_tiles < 1:
             raise ValueError("cache_tiles must be positive")
@@ -19,8 +21,13 @@ class TiledJpegReader:
         self.stream = None
         with tifffile.TiffFile(self.path) as tif:
             page = tif.pages[0]
-            if (not page.is_tiled or int(page.compression) != 7 or page.samplesperpixel != 3
-                    or page.bitspersample != 8 or int(page.planarconfig) != 1):
+            if (
+                not page.is_tiled
+                or int(page.compression) != 7
+                or page.samplesperpixel != 3
+                or page.bitspersample != 8
+                or int(page.planarconfig) != 1
+            ):
                 raise ValueError("Requires tiled JPEG, 8-bit, contiguous RGB level0 TIFF")
             orientation = page.tags.get("Orientation")
             if orientation is not None and int(orientation.value) != 1:
@@ -63,9 +70,10 @@ class TiledJpegReader:
                 tile = self._tile(ty * self.cols + tx)
                 left, top = max(x, tx * self.tw), max(y, ty * self.th)
                 end_x, end_y = min(right, (tx + 1) * self.tw), min(bottom, (ty + 1) * self.th)
-                result[top - y:end_y - y, left - x:end_x - x] = tile[
-                    top - ty * self.th:end_y - ty * self.th,
-                    left - tx * self.tw:end_x - tx * self.tw]
+                result[top - y : end_y - y, left - x : end_x - x] = tile[
+                    top - ty * self.th : end_y - ty * self.th,
+                    left - tx * self.tw : end_x - tx * self.tw,
+                ]
         return result
 
     def close(self):
@@ -77,12 +85,22 @@ class TiledJpegReader:
     def __del__(self):
         self.close()
 
+
 def preprocess_crop(rgb):
-    if rgb.dtype != np.uint8 or rgb.ndim != 3 or rgb.shape[2] != 3 or rgb.shape[0] != rgb.shape[1] or rgb.shape[0] not in (408,409):
+    if (
+        rgb.dtype != np.uint8
+        or rgb.ndim != 3
+        or rgb.shape[2] != 3
+        or rgb.shape[0] != rgb.shape[1]
+        or rgb.shape[0] not in (408, 409)
+    ):
         raise ValueError("Dense input must be calibrated square RGB uint8 crop of 408/409 pixels")
     pixels = cv2.resize(rgb, (224, 224), interpolation=cv2.INTER_AREA).astype(np.float32) / 255.0
-    pixels = (pixels - np.array([0.485, 0.456, 0.406], dtype=np.float32)) / np.array([0.229, 0.224, 0.225], dtype=np.float32)
+    pixels = (pixels - np.array([0.485, 0.456, 0.406], dtype=np.float32)) / np.array(
+        [0.229, 0.224, 0.225], dtype=np.float32
+    )
     return torch.from_numpy(np.ascontiguousarray(pixels.transpose(2, 0, 1)))
+
 
 class DenseCropDataset(Dataset):
     def __init__(self, rows, max_open_sources=2, cache_tiles=32):
@@ -119,17 +137,22 @@ class DenseCropDataset(Dataset):
     def __del__(self):
         self.close()
 
+
 def worker_init(_worker):
     cv2.setNumThreads(1)
     torch.set_num_threads(1)
 
+
 def flips4_probabilities(model, images, amp=False):
-    """Average four softmax probabilities, never average logits or features."""
+    """Average the softmax probabilities from four image orientations."""
     probabilities = []
     for axes in (None, (-1,), (-2,), (-2, -1)):
         transformed = images if axes is None else torch.flip(images, dims=axes)
-        with torch.autocast(device_type=images.device.type, dtype=torch.float16,
-                            enabled=amp and images.device.type == "cuda"):
+        with torch.autocast(
+            device_type=images.device.type,
+            dtype=torch.float16,
+            enabled=amp and images.device.type == "cuda",
+        ):
             logits = model(transformed)
             if logits.ndim != 2 or logits.shape[1] != 2:
                 raise ValueError("Expected two-class logits")
