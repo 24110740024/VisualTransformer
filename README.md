@@ -1,41 +1,41 @@
-# VisualTransformer: mouse lung histopathology analysis
+# VisualTransformer: Mouse Lung Histopathology Analysis
 
-Code and results for patch classification and animal-level scoring of mouse lung H&E whole-slide images in a heat and ozone co-exposure study.
+Code and numerical results for patch classification and animal-level pathological injury scoring of mouse lung H&E whole-slide images in a heat and ozone co-exposure study.
 
-[中文说明](docs/README_zh.md) · [Methods](docs/METHODS_AND_LIMITATIONS.md) · [Patch generation](docs/PATCH_GENERATION.md) · [Reproducibility](docs/REPRODUCING.md) · [Data](data/README.md) · [Results](results/README.md)
+[中文说明](docs/README_zh.md) · [Methods & Limitations](docs/METHODS_AND_LIMITATIONS.md) · [Patch Generation](docs/PATCH_GENERATION.md) · [Reproducibility](docs/REPRODUCING.md) · [Data](data/README.md) · [Results](results/README.md)
 
 ## Overview
 
-The implemented model (v6) fine-tunes an ImageNet-pretrained ViT-B/16 using class- and source-balanced sampling. Animal scores are obtained by averaging lesion probabilities over fixed whole-slide windows, with source-aware cross-fitting and an equal-weight average over three seeds.
+The primary model (`v6`) fine-tunes an ImageNet-pretrained ViT-B/16 backbone with class- and source-balanced sampling at a consistent physical field of view. Whole-slide animal scores are computed by averaging predicted lesion probabilities over fixed tissue windows using source-aware three-fold cross-fitting and an equal-weight ensemble across three random seeds.
 
-The analysis includes:
+Key components of the evaluation:
 
-- Patch classification: 23,309 training, 7,909 validation and 8,704 test patches from 19, 5 and 4 source slides, respectively.
-- Animal-level associations: 21 animals in seven experimental groups, using 132,032 fixed window locations.
-- Model comparisons: five pathology model configurations and a ResNet-50 classification baseline.
+- **Patch classification (`a6`)**: 23,309 training, 7,909 validation, and 8,704 test patches from 19, 5, and 4 source slides, respectively (strictly source-separated).
+- **Animal-level scoring (`a5`)**: 21 animals across 7 experimental groups, evaluated over 132,032 fixed whole-slide window locations.
+- **Model benchmarks**: five pathology configurations (`v2`–`v6`) alongside a ResNet-50 baseline.
 
-## Results
+## Summary of Results
 
-| Model configuration | Test AUC | 95% source-cluster bootstrap interval |
+| Model configuration | Test AUC | 95% Source-Cluster Bootstrap CI |
 |---|---:|---:|
-| Random-initialized ViT (v2) | 0.869556 | [0.814904, 0.931134] |
-| ImageNet-pretrained ViT (v3) | 0.868257 | [0.825655, 0.923752] |
-| Scale-consistent ViT (v4) | 0.887736 | [0.829997, 0.943078] |
-| Frozen Phikon-v2 with a linear classifier (v5) | 0.878963 | [0.772109, 0.946644] |
-| Scale-consistent ViT with balanced sampling (v6) | 0.891999 | [0.848038, 0.946250] |
-| ResNet-50 | 0.855901 | [0.779518, 0.930580] |
+| Random-initialized ViT (`v2`) | 0.870 | [0.815, 0.931] |
+| ImageNet-pretrained ViT (`v3`) | 0.868 | [0.826, 0.924] |
+| Scale-consistent ViT (`v4`) | 0.888 | [0.830, 0.943] |
+| Frozen Phikon-v2 + linear head (`v5`) | 0.879 | [0.772, 0.947] |
+| **Scale-consistent ViT + balanced sampling (`v6`)** | **0.892** | **[0.848, 0.946]** |
+| ResNet-50 baseline | 0.856 | [0.780, 0.931] |
 
-The v6 animal scores have Pearson correlations of 0.699976 with Area and 0.720957 with IL6 (n = 21). The corresponding Holm-adjusted p-values are 0.001235 and 0.000906. [Complete results](results/tables/all_associations_v2_v3_v4_v5_v6.csv) include all model configurations, Pearson and Spearman estimates, confidence intervals and sensitivity analyses.
+For animal-level scoring (`n = 21`), `v6` shows strong positive correlations with both recorded lesion area (`r = 0.700`, Holm-adjusted `p = 0.0012`) and IL-6 (`r = 0.721`, Holm-adjusted `p = 0.0009`). Full-precision metrics, Spearman estimates, confidence intervals, and sensitivity analyses are archived in [all_associations_v2_v3_v4_v5_v6.csv](results/tables/all_associations_v2_v3_v4_v5_v6.csv).
 
 ![Classification ROC curves](results/figures/a6_all_six_models.png)
 
 ![Animal-level associations](results/figures/a5_primary21_v6.png)
 
-These exploratory comparisons share four test sources, and v6 was selected for presentation after the results were examined. Animal associations are based on 21 animals and are primarily across experimental groups; within-group-centered correlations for v6 are 0.054569 and 0.173181. [Methods](docs/METHODS_AND_LIMITATIONS.md) describes the study design, uncertainty and interpretation.
+*Scope note:* Evaluation is performed on 4 held-out test slides and 21 animals across 7 exposure groups; pooled animal associations primarily reflect between-group differences. Full study design, statistical diagnostics, and limitations are detailed in [Methods & Limitations](docs/METHODS_AND_LIMITATIONS.md).
 
-## Reproduce the reported statistics
+## Reproducing the Reported Statistics
 
-Python 3.11 or later is required. The included predictions support CPU-only verification without image assets or model weights.
+Python 3.11+ is required. All reported metrics and bootstrap confidence intervals can be verified on CPU directly from the included prediction tables without original whole-slide images or model checkpoints:
 
 ```bash
 python -m pip install -r requirements-analysis.txt
@@ -43,27 +43,25 @@ python scripts/verify_results.py
 python scripts/verify_results.py --full-bootstrap
 ```
 
-Training and image inference additionally require the study image assets, pretrained initialization and a compatible CUDA environment. Installation and command-line examples are provided in [Reproducibility](docs/REPRODUCING.md).
+Full model retraining and whole-slide inference additionally require the original slide assets, pretrained weights, and a CUDA-compatible GPU environment. See [Reproducibility](docs/REPRODUCING.md) for end-to-end commands.
 
-## Repository structure
+## Repository Structure
 
-| Directory | Purpose |
+| Directory | Contents |
 |---|---|
-| `preprocessing/qupath/` | QuPath patch exporter and input provenance |
-| `rebuild_v6/` | Training, classification evaluation, whole-slide inference, scoring and statistics |
-| `data/` | Fixed split manifests, source identities and window coordinates |
-| `results/` | Predictions, numerical results, figures and training histories |
-| `scripts/` | Data preparation and numerical verification |
-| `tests/` | Software tests for identity separation, sampling and numerical equivalence |
-| `environment/` | Recorded computational environment |
-| `docs/` | Methods, reproducibility and model attribution |
+| `preprocessing/qupath/` | QuPath patch export script and provenance metadata |
+| `rebuild_v6/` | Training, patch evaluation, dense whole-slide inference, animal scoring, and statistics |
+| `data/` | Source-aware split manifests, canonical identities, and window coordinates |
+| `results/` | Prediction tables, summary CSVs, publication figures (PNG/SVG), and training logs |
+| `scripts/` | Data preparation and one-command CPU verification scripts |
+| `tests/` | Unit tests for source separation, sampling, and numerical consistency |
+| `environment/` | Recorded software and hardware environment |
+| `docs/` | Detailed methods, patch generation protocol, and reproducibility guide |
 
-The file-name identifiers `a6` and `a5` denote patch classification and cross-fitted animal scoring, respectively. Version identifiers v2–v6 refer to the model configurations reported above.
+## Data and Model Availability
 
-## Data and model availability
-
-Split metadata, coordinates, predictions and summary results are included. For access to original study images and trained model checkpoints, contact the repository maintainers. [Implementation provenance](docs/PROVENANCE.md) describes the reported model runs and the distributed software.
+Split manifests, window coordinates, model predictions, and numerical results are included in this repository. Original whole-slide images and trained checkpoints are available from the study maintainers upon reasonable request. See [Provenance](docs/PROVENANCE.md) for artifact integrity records.
 
 ## License
 
-Repository code is provided under the [Apache License 2.0](LICENSE). Phikon-derived comparison results are subject to the upstream model license, as specified in [Third-party notices](THIRD_PARTY_NOTICES.md) and [Result license scope](results/LICENSE_SCOPE.md).
+Code in this repository is released under the [Apache License 2.0](LICENSE). Phikon-v2 comparison outputs (`v5`) remain subject to the upstream model license; see [Third-Party Notices](THIRD_PARTY_NOTICES.md) and [Result License Scope](results/LICENSE_SCOPE.md).

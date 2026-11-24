@@ -53,8 +53,8 @@
     },
     {
       "path": "docs/METHODS_AND_LIMITATIONS.md",
-      "bytes": 6836,
-      "sha256": "6776a2b9232f09fe78953b215c136a670b881f212c0c5e25a390a8f5b68e319f"
+      "bytes": 6415,
+      "sha256": "0f99bbac982c4ccd7f3d93ea4697d47c48917ed20e82249f23c2dd15c109f5ec"
     },
     {
       "path": "docs/PATCH_GENERATION.md",
@@ -68,13 +68,13 @@
     },
     {
       "path": "docs/PROVENANCE.md",
-      "bytes": 2417,
-      "sha256": "a2c8f36050075acffea62f299850ca2843904ea2a99c1c15d94786401fd24dcc"
+      "bytes": 2215,
+      "sha256": "b81256c27e6869d4a5d21aef8cf9c114f004096c1f07eb2e506619209ba3cb56"
     },
     {
       "path": "docs/README_zh.md",
-      "bytes": 3298,
-      "sha256": "083e88e098216b658d596d4d9d77990baa5c82602a31641b0aca5aa93b021bfc"
+      "bytes": 3364,
+      "sha256": "2ad38df05334fe13fbd4959a7e89f72dd44014b78fcd1aaf8fb468fe28c09369"
     },
     {
       "path": "docs/REPRODUCING.md",
@@ -108,8 +108,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 4552,
-      "sha256": "b6c1d55f9ccceefd2d2f684aec63089666a52554028dff3b7944b5c50067032d"
+      "bytes": 4605,
+      "sha256": "9d3c072ac6dbfc2a49789464b218703390db5860d5d4145287053bbf3d138d53"
     },
     {
       "path": "rebuild_v6/aggregate.py",
@@ -343,8 +343,8 @@
     },
     {
       "path": "results/README.md",
-      "bytes": 2467,
-      "sha256": "6bac285e07e68963c9b3bf3e9b8a1e1365c193b09c353922832889d54ce19a5b"
+      "bytes": 2485,
+      "sha256": "c4cb4a91215e4217eef8c25c78e77b1952305a510b3b072d218b6cb082d1fb59"
     },
     {
       "path": "results/RELEASE_NUMERIC_CHECK.json",
